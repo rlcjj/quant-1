@@ -27,7 +27,7 @@ class AlphaDividend12m(AlphaFactor):
         dividend_12m = dividend_12m.loc[:, beg_date:end_date]
 
         res = dividend_12m.T.dropna(how='all').T
-        self.save_risk_factor_exposure(res, self.raw_factor_name)
+        self.save_alpha_factor_exposure(res, self.raw_factor_name)
 
 if __name__ == "__main__":
 

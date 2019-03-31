@@ -45,14 +45,15 @@ class AlphaDailyTsRank9(AlphaFactor):
                 print('Calculating factor %s at date %s is null' % (self.raw_factor_name, data_end_date))
 
         res = result.dropna(how='all').T
-        self.save_risk_factor_exposure(res, self.raw_factor_name)
+        self.save_alpha_factor_exposure(res, self.raw_factor_name)
 
 
 if __name__ == '__main__':
 
     from datetime import datetime
-    beg_date = '20190101'
+    beg_date = '20100101'
     end_date = datetime.today()
+    end_date = "20150101"
 
     self = AlphaDailyTsRank9()
     self.cal_factor_exposure(beg_date, end_date)

@@ -17,7 +17,10 @@ class FactorRemoveValue(object):
     def __init__(self):
         pass
 
-    def remove_extreme_value_std(self, data):
+    @staticmethod
+    def remove_extreme_value_std(data):
+
+        """ 三倍标准差去极值 """
 
         if type(data) == pd.Series:
             data_series = data.copy()
@@ -55,7 +58,10 @@ class FactorRemoveValue(object):
             print(" Type of Data can not be remove extreme value ")
             return None
 
-    def remove_extreme_value_mad(self, data):
+    @staticmethod
+    def remove_extreme_value_mad(data):
+
+        """ 5倍中位数去极值 """
 
         if type(data) == pd.Series:
             data_series = data.copy()
@@ -116,6 +122,7 @@ if __name__ == "__main__":
     result.columns = ["raw_data", 'remove_std', "remove_mad"]
     print(result[result['raw_data'] > 0.15])
     # print(result)
+
     # DataFrame
     ###################################################################
     remove_std_pandas = FactorRemoveValue().remove_extreme_value_std(data_pandas)
@@ -126,4 +133,3 @@ if __name__ == "__main__":
     result.columns = ["raw_data", 'remove_std', "remove_mad"]
     print(result[result['raw_data'] > 0.15])
     # print(result)
-    ###################################################################

@@ -34,7 +34,7 @@ class AlphaBP(AlphaFactor):
 
         # save data
         pb_data = holder_price.T.dropna(how='all').T
-        self.save_risk_factor_exposure(pb_data, self.raw_factor_name)
+        self.save_alpha_factor_exposure(pb_data, self.raw_factor_name)
 
 if __name__ == "__main__":
 

@@ -35,7 +35,7 @@ class AlphaROETTM(AlphaFactor):
         roe = Stock().change_quarter_to_daily_with_disclosure_date(roe, report_data, beg_date, end_date)
 
         res = roe.T.dropna(how='all').T
-        self.save_risk_factor_exposure(res, self.raw_factor_name)
+        self.save_alpha_factor_exposure(res, self.raw_factor_name)
 
 if __name__ == "__main__":
 

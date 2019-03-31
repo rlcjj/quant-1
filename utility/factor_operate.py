@@ -93,9 +93,9 @@ class FactorOperate(object):
     @staticmethod
     def drop_duplicated(data):
 
-        ind_noduplicated = ~data.index.duplicated(keep='first')
-        col_notduplicated = ~data.columns.duplicated(keep='first')
-        data = data.loc[ind_noduplicated, col_notduplicated]
+        ind_none_duplicated = ~data.index.duplicated(keep='first')
+        col_none_duplicated = ~data.columns.duplicated(keep='first')
+        data = data.loc[ind_none_duplicated, col_none_duplicated]
         return data
 
     def pandas_add_row(self, old_data, new_data):

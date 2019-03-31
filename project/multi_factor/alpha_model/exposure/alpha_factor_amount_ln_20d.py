@@ -6,25 +6,24 @@ from quant.stock.stock import Stock
 from quant.project.multi_factor.alpha_model.exposure.alpha_factor import AlphaFactor
 
 
-class AlphaAmount20d(AlphaFactor):
+class AlphaAmountLn20d(AlphaFactor):
 
     """
-    因子说明：-1* 过去40天成交额标准差 / 过去40天成交额均值
-    成绩额越大越稳定的得分越高
+    因子说明：过去20天的-1*log(交易额)的加权平均 权为随时间线性递减
     """
 
     def __init__(self):
 
         AlphaFactor.__init__(self)
         self.exposure_path = self.data_path
-        self.raw_factor_name = 'alpha_raw_amount_20d'
+        self.raw_factor_name = 'alpha_raw_amount_ln_20d'
 
     def cal_factor_exposure(self, beg_date, end_date):
 
         """ 计算因子暴露 """
 
         # params
-        long_term = 40
+        long_term = 20
         short_term = int(long_term * 0.5)
 
         # read data
@@ -64,7 +63,7 @@ class AlphaAmount20d(AlphaFactor):
             res = pd.concat([res, weight_amount], axis=1)
 
         res = res.T.dropna(how='all').T
-        self.save_risk_factor_exposure(res, self.raw_factor_name)
+        self.save_alpha_factor_exposure(res, self.raw_factor_name)
 
 
 if __name__ == "__main__":
@@ -73,5 +72,5 @@ if __name__ == "__main__":
     beg_date = '20040101'
     end_date = datetime.today()
 
-    self = AlphaAmount20d()
+    self = AlphaAmountLn20d()
     self.cal_factor_exposure(beg_date, end_date)

@@ -68,7 +68,7 @@ class AlphaIlliquidityBias(AlphaFactor):
             res = pd.concat([res, bias], axis=1)
 
         res = res.T.dropna(how='all').T
-        self.save_risk_factor_exposure(res, self.raw_factor_name)
+        self.save_alpha_factor_exposure(res, self.raw_factor_name)
 
 if __name__ == "__main__":
 

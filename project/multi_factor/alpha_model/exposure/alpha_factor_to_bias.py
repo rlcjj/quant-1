@@ -50,6 +50,9 @@ class AlphaTOBias(AlphaFactor):
             if len(to_long) >= effective_term:
                 print('Calculating factor %s at date %s' % (self.raw_factor_name, current_date))
                 turn_over_diff = to_long.mean() - to_short.mean()
+                turn_over_diff = pd.DataFrame(turn_over_diff)
+                turn_over_diff.columns = [current_date]
+
             else:
                 print('Calculating factor %s at date %s is null' % (self.raw_factor_name, current_date))
                 turn_over_diff = pd.DataFrame([], columns=[current_date], index=turn_over.columns)
@@ -57,7 +60,7 @@ class AlphaTOBias(AlphaFactor):
             res = pd.concat([res, turn_over_diff], axis=1)
 
         res = res.T.dropna(how='all').T
-        self.save_risk_factor_exposure(res, self.raw_factor_name)
+        self.save_alpha_factor_exposure(res, self.raw_factor_name)
 
 
 if __name__ == "__main__":

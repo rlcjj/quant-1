@@ -4,7 +4,6 @@ from datetime import datetime
 
 from quant.data.data import Data
 from quant.stock.date import Date
-from quant.stock.stock import Stock
 from quant.utility.write_excel import WriteExcel
 from quant.project.multi_factor.alpha_model.exposure.alpha_factor import AlphaFactor
 
@@ -19,38 +18,33 @@ class AlphaFactorUpdate(Data):
         self.sub_data_path = r'stock_data\alpha_model\factor\param'
         self.data_path = os.path.join(self.primary_data_path, self.sub_data_path)
 
-    def update_all_alpha(self, beg_date=None, end_date=None):
+    @staticmethod
+    def update_alpha_factor(beg_date=None, end_date=None):
 
         """ 开始更新最近Alpha数据 """
 
         if end_date is None:
             end_date = datetime.today().strftime("%Y%m%d")
         if beg_date is None:
-            beg_date = Date().get_trade_date_offset(end_date, -120)
+            beg_date = Date().get_trade_date_offset(end_date, -60)
 
-        factor_name_list = AlphaFactor().get_all_alpha_factor_name()
+        from quant.project.multi_factor.alpha_model.exposure.alpha_factor_income_yoy import AlphaIncomeYoY
+        from quant.project.multi_factor.alpha_model.exposure.alpha_factor_profit_yoy import AlphaProfitYoY
+        from quant.project.multi_factor.alpha_model.exposure.alpha_factor_roe import AlphaROE
+        from quant.project.multi_factor.alpha_model.exposure.alpha_factor_ths import AlphaTHS
+        from quant.project.multi_factor.alpha_model.exposure.alpha_factor_to_bias import AlphaTOBias
+        from quant.project.multi_factor.alpha_model.exposure.alpha_factor_ths_bias import AlphaTHSBias
+        from quant.project.multi_factor.alpha_model.exposure.alpha_factor_rsi import AlphaRSI
 
-        for i in range(0, len(factor_name_list)):
+        AlphaIncomeYoY().cal_factor_exposure(beg_date, end_date)
+        AlphaProfitYoY().cal_factor_exposure(beg_date, end_date)
+        AlphaROE().cal_factor_exposure(beg_date, end_date)
+        AlphaTHS().cal_factor_exposure(beg_date, end_date)
+        AlphaRSI().cal_factor_exposure(beg_date, end_date)
+        AlphaTHSBias().cal_factor_exposure(beg_date, end_date)
+        AlphaTOBias().cal_factor_exposure(beg_date, end_date)
 
-            factor_name = factor_name_list[i]
-            try:
-                print("######### 开始更新 第%s个Factor %s 数据 #########" % (i + 1, factor_name))
-                function_name = factor_name
-                eval(function_name)(beg_date, end_date)
-            except Exception as e:
-                print(e)
-                print("######### 调用函数失败 第%s个Factor %s #########" % (i + 1, factor_name))
-
-    def update_alpha_factor(self, beg_date=None, end_date=None):
-
-        """ 开始更新最近Alpha数据 """
-
-        if end_date is None:
-            end_date = datetime.today().strftime("%Y%m%d")
-        if beg_date is None:
-            beg_date = Date().get_trade_date_offset(end_date, -120)
-
-    def check_update_date(self):
+    def check_alpha_factor_update_date(self):
 
         """ 检查所有Alpha因子最后更新时间 """
 
@@ -62,7 +56,7 @@ class AlphaFactorUpdate(Data):
             factor_name = factor_name_list[i]
             try:
                 print("######### 检查更新日期 %s 数据 ############" % factor_name)
-                factor = Stock().read_factor_h5(factor_name, Stock().get_h5_path("my_alpha"))
+                factor = AlphaFactor().get_alpha_factor_exposure(factor_name)
                 result.loc[factor_name, '开始日期'] = factor.columns[0]
                 result.loc[factor_name, '结束日期'] = factor.columns[-1]
                 result.loc[factor_name, "最后一天有效数据个数"] = factor.iloc[:, -1].count()
@@ -92,5 +86,5 @@ class AlphaFactorUpdate(Data):
 if __name__ == '__main__':
 
     self = AlphaFactorUpdate()
-    # self.update_all_alpha("20181001", "20190228")
-    self.check_update_date()
+    self.update_alpha_factor()
+    self.check_alpha_factor_update_date()

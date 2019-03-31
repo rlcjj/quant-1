@@ -9,10 +9,10 @@ from quant.stock.stock import Stock
 from quant.utility.factor_preprocess import FactorPreProcess
 
 
-class AlphaFactor(Data):
+class PrimaryFactor(Data):
 
     """
-    所有Alpha因子的父类
+    所有基础股票因子的父类
 
     注意不管是风险模型、还是alpha模型，其模型的构造都和股票池相关
     """
@@ -22,25 +22,24 @@ class AlphaFactor(Data):
         """ 数据存储位置 """
 
         Data.__init__(self)
-        self.sub_data_path = r'stock_data\alpha_model'
+        self.sub_data_path = r'stock_data\stock_factor'
         self.data_path = os.path.join(self.primary_data_path, self.sub_data_path)
-        self.exposure_hdf_path = os.path.join(self.data_path, r'factor\hdf')
-        self.exposure_csv_path = os.path.join(self.data_path, r'factor\csv')
-        self.factor_performance_path = os.path.join(self.data_path, r'factor_performance')
+        self.exposure_hdf_path = os.path.join(self.data_path, r'primary_factor\hdf')
+        self.exposure_csv_path = os.path.join(self.data_path, r'primary_factor\csv')
 
-    def get_alpha_factor_exposure(self, factor_name):
+    def get_primary_factor_exposure(self, factor_name):
 
         """ 取得风险因子的暴露 """
 
         data = Stock().read_factor_h5(factor_name, self.exposure_hdf_path)
         return data
 
-    def save_alpha_factor_exposure(self, data, factor_name):
+    def save_primary_factor_exposure(self, data, factor_name):
 
         """ 存储成为 CSV 和 HDF 两份 """
 
         Stock().write_factor_h5(data, factor_name, self.exposure_hdf_path)
-        data = self.get_alpha_factor_exposure(factor_name)
+        data = self.get_primary_factor_exposure(factor_name)
         data.to_csv(os.path.join(self.exposure_csv_path, '%s.csv' % factor_name))
 
     def get_all_alpha_factor_name(self):
@@ -52,21 +51,11 @@ class AlphaFactor(Data):
         factor_name_list = list(map(lambda x: x[0:-3], file_list))
         return factor_name_list
 
-    def get_standard_alpha_factor(self, factor_name):
-
-        """ 预处理Alpha因子 包括去极值、标准化 """
-
-        factor_data = self.get_alpha_factor_exposure(factor_name)
-        factor_remove = FactorPreProcess().remove_extreme_value_mad(factor_data)
-        factor_stand = FactorPreProcess().standardization(factor_remove)
-
-        return factor_stand
-
 
 if __name__ == '__main__':
 
     factor_name = "alpha_raw_roe"
     beg_date, end_date, period = None, None, "D"
 
-    self = AlphaFactor()
-    self.get_alpha_factor_exposure(factor_name)
+    self = PrimaryFactor()
+    self.get_primary_factor_exposure(factor_name)

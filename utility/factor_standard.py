@@ -1,7 +1,6 @@
 import pandas as pd
 from scipy.stats import norm
 
-from quant.stock.date import Date
 from quant.utility.factor_operate import FactorOperate
 
 
