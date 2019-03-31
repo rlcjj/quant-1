@@ -51,9 +51,9 @@ class AlphaDailyTsRank9(AlphaFactor):
 if __name__ == '__main__':
 
     from datetime import datetime
-    beg_date = '20100101'
+    beg_date = '20060101'
     end_date = datetime.today()
-    end_date = "20150101"
+    end_date = "20100101"
 
     self = AlphaDailyTsRank9()
     self.cal_factor_exposure(beg_date, end_date)

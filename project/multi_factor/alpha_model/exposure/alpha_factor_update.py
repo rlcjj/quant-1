@@ -72,7 +72,7 @@ class AlphaFactorUpdate(Data):
 
         out_file = os.path.join(self.data_path, "AlphaFactorUpdateDate.xlsx")
         we = WriteExcel(out_file)
-        ws = we.add_worksheet("Alpha_Date")
+        ws = we.add_worksheet("更新数据")
 
         num_format_pd = pd.DataFrame([], columns=result.columns, index=['format'])
         num_format_pd.loc['format', :] = '0'
@@ -86,5 +86,5 @@ class AlphaFactorUpdate(Data):
 if __name__ == '__main__':
 
     self = AlphaFactorUpdate()
-    self.update_alpha_factor()
+    # self.update_alpha_factor()
     self.check_alpha_factor_update_date()
