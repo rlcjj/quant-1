@@ -57,6 +57,7 @@ class AlphaFactorUpdate(Data):
             try:
                 print("######### 检查更新日期 %s 数据 ############" % factor_name)
                 factor = AlphaFactor().get_alpha_factor_exposure(factor_name)
+                factor = factor.T.dropna(how='all').T
                 result.loc[factor_name, '开始日期'] = factor.columns[0]
                 result.loc[factor_name, '结束日期'] = factor.columns[-1]
                 result.loc[factor_name, "最后一天有效数据个数"] = factor.iloc[:, -1].count()

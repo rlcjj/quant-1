@@ -1,4 +1,3 @@
-import pandas as pd
 import numpy as np
 from quant.stock.stock import Stock
 from quant.stock.date import Date

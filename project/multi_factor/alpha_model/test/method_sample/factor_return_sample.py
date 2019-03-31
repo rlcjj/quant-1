@@ -174,6 +174,22 @@ class FactorReturnSample(Data):
         self.corr = pd.read_csv(file, index_col=[0], encoding='gbk')
         self.corr.index = self.corr.index.map(str)
 
+    def get_alpha_res_corr(self, beg_date, end_date):
+
+        """ 计算残差暴露的相关性 """
+
+        data = self.alpha_res.loc[:, beg_date:end_date]
+        res = pd.DataFrame([], index=data.columns, columns=['Corr'])
+
+        for i in range(len(data.columns)-1):
+            date = data.columns[i]
+            date_next = data.columns[i + 1]
+            data_date = pd.concat([data[date], data[date_next]], axis=1)
+            data_date = data_date.dropna()
+            res.loc[date, "Corr"] = data_date.corr().iloc[0, 1]
+        corr = res.mean().values[0]
+        return corr
+
     def cal_factor_summary(self, beg_date, end_date, factor_name, period="W", stock_pool_name="AllChinaStockFilter"):
 
         """ 计算每年的因子表现（首先得计算因子收益率 残差因子暴露等信息） """
@@ -186,15 +202,18 @@ class FactorReturnSample(Data):
         year = back_test_days / self.year_trade_days
         self.alpha_return['year'] = self.alpha_return.index.map(lambda x: datetime.strptime(x, "%Y%m%d").year)
         self.corr['year'] = self.corr.index.map(lambda x: datetime.strptime(str(x), "%Y%m%d").year)
+        self.alpha_return['date'] = self.alpha_return.index
 
+        bg_date = self.alpha_return.groupby(by=['year'])['date'].min()
+        ed_date = self.alpha_return.groupby(by=['year'])['date'].max()
         year_fr = self.alpha_return.groupby(by=['year'])['FactorReturn'].sum()
         year_fr_std = self.alpha_return.groupby(by=['year'])['FactorReturn'].std() * np.sqrt(self.year_number)
         year_count = self.alpha_return.groupby(by=['year'])['FactorReturn'].count()
         year_ic_mean = self.alpha_return.groupby(by=['year'])['IC'].mean()
         year_ic_std = self.alpha_return.groupby(by=['year'])['IC'].std()
 
-        summary = pd.concat([year_fr, year_fr_std, year_count, year_ic_mean, year_ic_std], axis=1)
-        summary.columns = ['年化收益', '年化波动率', '调仓次数', 'IC均值', 'IC波动']
+        summary = pd.concat([year_fr, year_fr_std, year_count, year_ic_mean, year_ic_std, bg_date, ed_date], axis=1)
+        summary.columns = ['年化收益', '年化波动率', '调仓次数', 'IC均值', 'IC波动', '开始时间', '结束时间']
         summary['年化收益'] = summary['年化收益'] / summary['调仓次数'] * self.year_number
         summary['ICIR'] = summary['IC均值'] / summary['IC波动'] * np.sqrt(self.year_number)
         summary.loc['All', '年化收益'] = self.alpha_return["FactorReturn"].sum() / year
@@ -205,7 +224,15 @@ class FactorReturnSample(Data):
         summary.loc['All', 'ICIR'] = mean / std * np.sqrt(self.year_number)
         summary.loc['All', 'IC均值'] = mean
         summary.loc['All', 'IC波动'] = std
+        summary.loc['All', '开始时间'] = self.alpha_return.index[0]
+        summary.loc['All', '结束时间'] = self.alpha_return.index[-1]
         summary.index = summary.index.map(str)
+
+        for i in range(len(summary)):
+            label = summary.index[i]
+            bdate = summary.loc[label, "开始时间"]
+            edate = summary.loc[label, "结束时间"]
+            summary.loc[label, "自相关系数"] = self.get_alpha_res_corr(bdate, edate)
 
         group = self.alpha_return.groupby(by=['year'])[self.labels].sum()
         group.loc['All', self.labels] = self.alpha_return[self.labels].sum() / year
@@ -248,15 +275,15 @@ class FactorReturnSample(Data):
 
         pos_pic = len(summary) + 3
         pos_end = len(summary) + 1
-        excel.chart_columns_plot(worksheet, sheet_name, series_name="分组超额收益",
+        excel.chart_columns_plot(worksheet, sheet_name, series_name=["分组超额收益"],
                                  chart_name="分组超额收益%s" % self.alpha_factor_name,
-                                 insert_pos="B%s" % pos_pic, cat_beg="K1", cat_end="T1",
-                                 val_beg_list=["K%s" % pos_end], val_end_list=["T%s" % pos_end])
+                                 insert_pos="B%s" % pos_pic, cat_beg="N1", cat_end="W1",
+                                 val_beg_list=["N%s" % pos_end], val_end_list=["W%s" % pos_end])
 
-        excel.chart_columns_plot(worksheet, sheet_name, series_name="风格暴露",
+        excel.chart_columns_plot(worksheet, sheet_name, series_name=["风格暴露"],
                                  chart_name="风格暴露%s" % self.alpha_factor_name,
-                                 insert_pos="K%s" % pos_pic, cat_beg="X1", cat_end="AG1",
-                                 val_beg_list=["X%s" % pos_end], val_end_list=["AG%s" % pos_end])
+                                 insert_pos="N%s" % pos_pic, cat_beg="AA1", cat_end="AJ1",
+                                 val_beg_list=["AA%s" % pos_end], val_end_list=["AJ%s" % pos_end])
         excel.close()
 
     def cal_all_factor_summary(self, beg_date, end_date, period="W",  stock_pool_name="AllChinaStockFilter", force=0):
@@ -276,9 +303,9 @@ class FactorReturnSample(Data):
             if force or not os.path.exists(filename):
                 print("Cal Alpha Factor Return", factor_name)
                 self.cal_factor_return(beg_date, end_date, factor_name, period, stock_pool_name)
-                self.cal_factor_summary(beg_date, end_date, factor_name, period, stock_pool_name)
             else:
                 print("Already Exist Alpha Factor Return", factor_name)
+            self.cal_factor_summary(beg_date, end_date, factor_name, period, stock_pool_name)
 
     def concat_summary(self, stock_pool_name):
 
@@ -297,7 +324,7 @@ class FactorReturnSample(Data):
                 file_postfix = (self.alpha_factor_name, self.stock_pool_name)
                 filename = os.path.join(self.summary_path, "summary_%s_%s.xlsx" % file_postfix)
                 data = pd.read_excel(filename, index_col=[1])
-                columns = ['ICIR', 'IC均值', '年化波动率', '年化收益']
+                columns = ['ICIR', 'IC均值', '年化波动率', '年化收益', '开始时间', '结束时间', '自相关系数']
                 data_factor = pd.DataFrame(data.loc['All', columns])
                 data_factor.columns = [factor_name]
                 data_factor = data_factor.T
@@ -307,6 +334,8 @@ class FactorReturnSample(Data):
                 print("Can not Find Factor Result", factor_name)
 
         all_data['股票池'] = stock_pool_name
+        all_data['开始时间'] = all_data['开始时间'].map(str)
+        all_data['结束时间'] = all_data['结束时间'].map(str)
 
         filename = os.path.join(self.summary_path, 'AlphaSummary_%s.xlsx' % stock_pool_name)
         excel = WriteExcel(filename)
@@ -324,8 +353,8 @@ if __name__ == '__main__':
     self = FactorReturnSample()
     beg_date, end_date, period = "20040101", datetime.today().strftime("%Y%m%d"), "W"
 
-    # factor_name = "daily_alpha_raw_ts_rank9"
-    # stock_pool_name = "AllChinaStockFilter"
+    factor_name = "daily_alpha_raw_ts_rank9"
+    stock_pool_name = "AllChinaStockFilter"
     # self.cal_factor_return(beg_date, end_date, factor_name, period, stock_pool_name)
     # self.cal_factor_summary(beg_date, end_date, factor_name, period)
 

@@ -9,10 +9,10 @@ from quant.project.multi_factor.alpha_model.exposure.alpha_factor import AlphaFa
 class AlphaRSI(AlphaFactor):
 
     """
-    因子说明： - 14天 RSI
+    因子说明： - 28天 RSI （参数太小换手率太高）
 
-    A——N日内收盘涨幅之和
-    B——N日内收盘跌幅之和(取正值)
+    A——N日内收盘涨幅的平均数
+    B——N日内收盘跌幅之平均数(取正值)
     N日RSI =A /（A+B）×100
     实际理解为：在某一阶段价格上涨所产生的波动占整个波动的百分比
     感觉有些类似于低波 或者反转
@@ -29,8 +29,8 @@ class AlphaRSI(AlphaFactor):
         """ 计算因子暴露 """
 
         # param
-        term = 14
-        effective_term = int(term / 2)
+        term = 28
+        effective_term = int(term * 0.8)
 
         # data
         pct = Stock().read_factor_h5("Pct_chg")
@@ -51,8 +51,8 @@ class AlphaRSI(AlphaFactor):
             if len(data_period) > effective_term:
 
                 print('Calculating factor %s at date %s' % (self.raw_factor_name, current_date))
-                data_positive = data_period[data_period > 0.0].sum()
-                data_negative = - data_period[data_period <= 0.0].sum()
+                data_positive = data_period[data_period > 0.0].mean()
+                data_negative = - data_period[data_period <= 0.0].mean()
                 data_sum = data_positive + data_negative
                 code_list = data_sum[data_sum != 0.0].index
                 data_date = data_positive[code_list] / data_sum[code_list]
