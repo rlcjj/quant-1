@@ -6,27 +6,26 @@ from quant.stock.stock import Stock
 from quant.project.multi_factor.alpha_model.exposure.alpha_factor import AlphaFactor
 
 
-class AlphaIlliquidityBias(AlphaFactor):
+class AlphaIlliquidity(AlphaFactor):
 
     """
-    因子说明： 非流动性=涨跌幅的绝对值 / 交易额
+    因子说明：非流动性=涨跌幅的绝对值 / 交易额
+    20天均值
     有的交易额很小 去掉异常值
-    非流动性的差 = 最近10天均值 / 最近40天均值
     """
 
     def __init__(self):
 
         AlphaFactor.__init__(self)
         self.exposure_path = self.data_path
-        self.raw_factor_name = 'alpha_raw_illiquidity_bias'
+        self.raw_factor_name = 'alpha_raw_illiquidity'
 
     def cal_factor_exposure(self, beg_date, end_date):
 
         """ 计算因子暴露 """
 
         # param
-        long_term = 40
-        short_term = 10
+        long_term = 20
         effective_term = int(long_term / 2)
         extreme_value = 80
 
@@ -53,12 +52,12 @@ class AlphaIlliquidityBias(AlphaFactor):
             if len(trade_amount_before) > effective_term:
                 print('Calculating factor %s at date %s' % (self.raw_factor_name, current_date))
                 zero_number = trade_amount_before.applymap(lambda x: 1.0 if x == 0.0 else 0.0).sum()
-                code_filter_list = (zero_number[zero_number < short_term]).index
+                code_filter_list = (zero_number[zero_number < effective_term]).index
                 amount_before = trade_amount.loc[data_beg_date:current_date, code_filter_list]
                 pct_before = pct.loc[data_beg_date:current_date, code_filter_list]
                 iq = pct_before.abs().div(amount_before)
                 iq[iq > extreme_value] = np.nan
-                bias = iq.iloc[-1 - short_term:, :].mean() / iq.mean()
+                bias = iq.mean()
                 bias = pd.DataFrame(bias)
                 bias.columns = [current_date]
             else:
@@ -76,5 +75,5 @@ if __name__ == "__main__":
     beg_date = '20040101'
     end_date = datetime.today()
 
-    self = AlphaIlliquidityBias()
+    self = AlphaIlliquidity()
     self.cal_factor_exposure(beg_date, end_date)

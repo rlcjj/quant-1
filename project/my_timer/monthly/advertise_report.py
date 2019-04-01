@@ -243,7 +243,7 @@ def copyfile(date):
 
     import shutil
     last_trade_day = Date().get_trade_date_offset(date, 0)
-    web_path = r'Z:\# 量化产品宣传单页月报'
+    web_path = r'\\10.1.0.7\rd\※※金融工程部数据产品※※\# 基金季报月报\基金宣传单页机构版'
     web_sub_path = os.path.join(web_path, last_trade_day)
     if not os.path.exists(web_sub_path):
         os.makedirs(web_sub_path)
@@ -269,40 +269,13 @@ def copyfile(date):
         shutil.copyfile(my_file, web_file)
 
 
-def mail(date):
-
-    """发送邮件"""
-
-    last_trade_day = Date().get_trade_date_offset(date, 0)
-    web_path = r'E:\Data\mfcteda_data\advertise_report'
-    web_sub_path = os.path.join(web_path, last_trade_day)
-
-    print(" Mailing Report Fund Monthly")
-    sender_mail_name = 'fucheng.dou@mfcteda.com'
-
-    receivers_mail_name = ['yang.liu@mfcteda.com', 'fucheng.dou@mfcteda.com']
-    # receivers_mail_name = ['fucheng.dou@mfcteda.com']
-
-    zip_filename = "fund_report_" + last_trade_day + ".rar"
-    ZipFile().zip_folder(web_sub_path, os.path.join(web_path, zip_filename))
-
-    acc_mail_name = []
-    subject_header = "基金宣传单页_月报_机构版%s" % last_trade_day
-    email = EmailSender()
-    email.attach_html_text("机构版文件位于网盘 rd:\# 量化产品宣传单页月报，内部版如有需要单独发送 ")
-    email.attach_file(os.path.join(web_path, zip_filename))
-    email.send_mail_mfcteda(sender_mail_name, receivers_mail_name,
-                            acc_mail_name, subject_header)
-    os.remove(os.path.join(web_path, zip_filename))
-
-
 if __name__ == '__main__':
 
     date = "20190329"
-    update_data(date)
+    # update_data(date)
     # generate_excel_institution(date)
     # generate_word_institution(date)
     # generate_excel_inside(date)
-    generate_word_inside(date)
-    # copyfile(date)
-    # mail(date)
+    # generate_word_inside(date)
+    copyfile(date)
+    # 手动发送邮件给各部门的同事
