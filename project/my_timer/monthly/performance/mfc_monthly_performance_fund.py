@@ -188,7 +188,7 @@ class MfcMonthlyPerformanceFund(Data):
         """ 部门所有基金业绩汇总 """
 
         path = MfcData().data_path
-        file = os.path.join(path, "static_data", "mfcteda_public_fund.csv")
+        file = os.path.join(path, "static_data", "mfcteda_public_fund_new.csv")
         public_code = pd.read_csv(file, index_col=[0], encoding='gbk', parse_dates=[4])
         public_code["任职日期"] = public_code["任职日期"].map(Date().change_to_str)
 
@@ -223,8 +223,8 @@ if __name__ == '__main__':
     end_date = Date().get_normal_date_last_month_end_day(datetime.today())
     print(end_date)
     self = MfcMonthlyPerformanceFund()
-    self.update_data()
-    self.write_main(end_date)
+    # self.update_data()
+    # self.write_main(end_date)
     self.rank_all_fund(end_date)
 
     """ 需要更新富时指数收益 """

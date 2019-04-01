@@ -9,7 +9,6 @@ from quant.stock.index import Index
 from quant.stock.date import Date
 from quant.utility.financial_series import FinancialSeries
 from quant.utility.write_excel import WriteExcel
-from quant.project.fund.mfc_manager_money.mfc_manager_money import MfcManagerMoney
 
 """ 戴博需要的整理数据 每月更新 """
 """ 泰达宏利所有股票基金及基金经理任职及每年表现 """
@@ -311,9 +310,8 @@ if __name__ == '__main__':
 
     end_date = Date().get_normal_date_last_month_end_day(datetime.today())
     print(end_date)
-    end_date = "20190315"
 
     """ 需要更新富时指数收益 """
-    # update_data()
+    update_data()
     rank_all_manager(end_date)
-    # rank_all_fund(end_date)
+    rank_all_fund(end_date)

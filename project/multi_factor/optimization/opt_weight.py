@@ -2,7 +2,7 @@ import os
 from datetime import datetime
 
 import pandas as pd
-from project.multi_factor.alpha_model.test.method_sample.factor_return_sample import FactorReturnSample
+from project.multi_factor.alpha_model.process.sample_split import FactorReturnSample
 from quant.data.data import Data
 from quant.fund.fund_factor import FundFactor
 from quant.fund.fund_pool import FundPool

@@ -1,7 +1,7 @@
 import os
 
 import pandas as pd
-from project.multi_factor.alpha_model.test.method_fmp import FMP
+from project.multi_factor.alpha_model.process.fmp import FMP
 
 if __name__ == '__main__':
 

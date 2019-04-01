@@ -62,7 +62,7 @@ class AlphaAR2E(AlphaFactor):
 if __name__ == '__main__':
 
     from datetime import datetime
-    beg_date = '20040101'
+    beg_date = '20190101'
     end_date = datetime.today()
 
     self = AlphaAR2E()

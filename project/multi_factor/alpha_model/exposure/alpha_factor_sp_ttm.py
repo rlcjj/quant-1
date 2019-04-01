@@ -3,7 +3,7 @@ from quant.utility.factor_preprocess import FactorPreProcess
 from quant.project.multi_factor.alpha_model.exposure.alpha_factor import AlphaFactor
 
 
-class AlphaEP(AlphaFactor):
+class AlphaSPTTM(AlphaFactor):
 
     """
     因子说明：营收收入 / 总市值
@@ -45,5 +45,5 @@ if __name__ == "__main__":
     beg_date = '20040101'
     end_date = datetime.today()
 
-    self = AlphaEP()
+    self = AlphaSPTTM()
     self.cal_factor_exposure(beg_date, end_date)

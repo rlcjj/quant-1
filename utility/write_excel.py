@@ -98,6 +98,8 @@ class WriteExcel(object):
                 col = data.columns[i_col]
                 if type(data.ix[0, col]) in [np.int, np.float]:
                     data[col] = data[col].fillna(0.0)
+                    data[col] = data[col].replace(-np.inf, 0)
+                    data[col] = data[col].replace(np.inf, 0)
                 else:
                     data[col] = data[col].fillna("")
 

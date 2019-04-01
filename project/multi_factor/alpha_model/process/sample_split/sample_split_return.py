@@ -290,8 +290,7 @@ class FactorReturnSample(Data):
 
         """ 计算所有因子表现 """
 
-        file_list = os.listdir(AlphaFactor().exposure_hdf_path)
-        factor_list = list(map(lambda x: x[0:-3], file_list))
+        factor_list = AlphaFactor().get_all_alpha_factor_name()
 
         for i in range(0, len(factor_list)):
 
@@ -311,11 +310,10 @@ class FactorReturnSample(Data):
 
         """ 所有因子回测结果汇总 """
 
-        all_data = pd.DataFrame([])
-        file_list = os.listdir(AlphaFactor().exposure_hdf_path)
-        factor_list = list(map(lambda x: x[0:-3], file_list))
+        factor_list = AlphaFactor().get_all_alpha_factor_name()
 
         for i in range(0, len(factor_list)):
+
             factor_name = factor_list[i]
             print("Summary Alpha Factor Return", factor_name)
             self.alpha_factor_name = factor_name
@@ -347,25 +345,26 @@ class FactorReturnSample(Data):
                            num_format_pd=num_format_pd, color="red", fillna=True)
         excel.close()
 
-    def concat_alpha(self, stock_pool_name):
+    def concat_icir_alpha(self, stock_pool_name):
 
-        """ 加权Alphpa """
+        """ 汇总加权(ICIR) Alppa;也汇总了原始因子值"""
 
         if stock_pool_name == "hs300":
-            min_anto_corr = 0.85
+            min_corr = 0.85
             min_ic_ir = 1.0
         else:
-            min_anto_corr = 0.85
+            min_corr = 0.85
             min_ic_ir = 1.5
 
         filename = os.path.join(self.summary_path, 'AlphaSummary_%s.xlsx' % stock_pool_name)
         data = pd.read_excel(filename, index_col=[1])
         data = data.T.dropna(how='all').T
-        data = data[data['自相关系数'] > min_anto_corr]
+        data = data[data['自相关系数'] > min_corr]
         data = data[data['ICIR'].abs() > min_ic_ir]
         data['权重'] = data['ICIR']
 
         res = pd.DataFrame()
+        raw = pd.DataFrame()
 
         for i in range(len(data)):
 
@@ -381,21 +380,17 @@ class FactorReturnSample(Data):
             alpha_date = pd.DataFrame(alpha.loc[:, date]) * weight
             alpha_date.columns = ['%s_score' % alpha_name]
 
-            # raw_data = AlphaFactor().get_alpha_factor_exposure(alpha_name)
-            # raw_date = pd.DataFrame(raw_data[date])
-            # raw_date.columns = [alpha_name]
-            # raw_date[raw_date == np.inf] = np.nan
-            # raw_date[raw_date == -np.inf] = np.nan
-            #
-            # factor_date = pd.concat([alpha_date, raw_date], axis=1)
-            # factor_date = factor_date.dropna()
+            raw_data = AlphaFactor().get_alpha_factor_exposure(alpha_name)
+            raw_date = pd.DataFrame(raw_data[date])
+            raw_date.columns = [alpha_name]
+
             res = pd.concat([res, alpha_date], axis=1)
+            raw = pd.concat([raw, raw_date], axis=1)
 
         res = res.dropna(how="all")
         res["AlphaScore"] = res.sum(axis=1, skipna=True)
         res = res.sort_values(by=['AlphaScore'], ascending=False)
         res['Name'] = res.index.map(lambda x: Stock().get_stock_name_date(x, date))
-        # res.to_csv(os.path.join(self.summary_path, 'AlphaTotal_%s.csv' % stock_pool_name))
 
         filename = os.path.join(self.summary_path, 'AlphaTotal_%s.xlsx' % stock_pool_name)
         excel = WriteExcel(filename)
@@ -405,6 +400,11 @@ class FactorReturnSample(Data):
         excel.write_pandas(res, worksheet, begin_row_number=0, begin_col_number=1,
                            num_format_pd=num_format_pd, color="red", fillna=True)
         excel.close()
+
+        raw = raw.dropna(how="all")
+        filename = os.path.join(self.summary_path, 'AlphaRaw_%s.csv' % stock_pool_name)
+        raw.to_csv(filename)
+
 
 if __name__ == '__main__':
 
@@ -419,14 +419,14 @@ if __name__ == '__main__':
     stock_pool_name = "AllChinaStockFilter"
     # self.cal_all_factor_summary(beg_date, end_date, period, stock_pool_name, 0)
     # self.concat_summary(stock_pool_name)
-    self.concat_alpha(stock_pool_name)
+    self.concat_icir_alpha(stock_pool_name)
 
     stock_pool_name = "hs300"
     # self.cal_all_factor_summary(beg_date, end_date, period, stock_pool_name, 0)
     # self.concat_summary(stock_pool_name)
-    self.concat_alpha(stock_pool_name)
+    self.concat_icir_alpha(stock_pool_name)
 
     stock_pool_name = "zz500"
     # self.cal_all_factor_summary(beg_date, end_date, period, stock_pool_name, 0)
     # self.concat_summary(stock_pool_name)
-    self.concat_alpha(stock_pool_name)
+    self.concat_icir_alpha(stock_pool_name)

@@ -32,7 +32,7 @@ class RiskFactorUpdate(object):
         """ 下载所有风险因子需要的数据 """
 
         print("######## Begin Update Risk Factor Need Data ########")
-        Stock().load_h5_primary_factor()
+        # Stock().load_h5_primary_factor()
         Index().load_index_factor(index_code='881001.WI', beg_date=beg_date, end_date=end_date)
         Index().load_index_factor(index_code='000985.CSI', beg_date=beg_date, end_date=end_date)
         Macro().load_daily_risk_free_rate(beg_date, end_date)
@@ -61,18 +61,23 @@ class RiskFactorUpdate(object):
         RiskFactorFundETFHolder().cal_factor_exposure(beg_date, end_date)
         RiskFactorGEM().cal_factor_exposure(beg_date, end_date)
 
+    def update_risk_factor(self):
+
+        """
+        下载所有风险因子需要的数据
+        计算所有风险因子暴露
+        """
+
+        end_date = datetime.today()
+        beg_date = Date().get_trade_date_offset(end_date, -20)
+        self.load_data(beg_date, end_date)
+
+        end_date = datetime.today()
+        beg_date = Date().get_trade_date_offset(end_date, -10)
+        self.cal_risk_factor_exposure(beg_date, end_date)
+
+
 if __name__ == '__main__':
 
     self = RiskFactorUpdate()
-
-    """ 下载所有风险因子需要的数据 """
-
-    end_date = datetime.today()
-    beg_date = Date().get_trade_date_offset(end_date, -30)
-    self.load_data(beg_date, end_date)
-
-    """ 计算所有风险因子暴露 """
-
-    end_date = datetime.today()
-    beg_date = Date().get_trade_date_offset(end_date, -10)
-    self.cal_risk_factor_exposure(beg_date, end_date)
+    self.update_risk_factor()

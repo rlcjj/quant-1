@@ -7,8 +7,8 @@ from quant.project.multi_factor.alpha_model.exposure.alpha_factor import AlphaFa
 class AlphaATBias(AlphaFactor):
 
     """
-    # 总资产周转率环减 Asset TurnOver Bias
-    # 因子说明：当季度（营业收入TTM / 总资产加权）- 本季度（营业收入TTM / 总资产加权）
+    总资产周转率环减 Asset TurnOver Bias
+    因子说明：当季度（营业收入TTM / 总资产加权）- 本季度（营业收入TTM / 总资产加权）
     """
 
     def __init__(self):
