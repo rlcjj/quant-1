@@ -24,9 +24,11 @@ class AlphaROE(AlphaFactor):
         # read data
         net_profit = Stock().read_factor_h5("NetProfitDeducted")
         holder = Stock().read_factor_h5("TotalShareHoldeRequity") / 100000000.0
+        holder_ttm = Stock().change_single_quarter_to_ttm_quarter(holder) / 4.0
+        # holder_ttm[holder_ttm < 1.0] = np.nan
 
-        [net_profit, holder] = Stock().make_same_index_columns([net_profit, holder])
-        roe = 4 * net_profit.div(holder)
+        [net_profit, holder_ttm] = Stock().make_same_index_columns([net_profit, holder_ttm])
+        roe = 4 * net_profit.div(holder_ttm)
 
         report_data = Stock().read_factor_h5("ReportDateDaily")
         roe = Stock().change_quarter_to_daily_with_disclosure_date(roe, report_data, beg_date, end_date)

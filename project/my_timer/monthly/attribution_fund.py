@@ -916,7 +916,7 @@ class AttributionFund(Data):
 if __name__ == '__main__':
 
     self = AttributionFund()
-    date_list = [['20190101', '20190228', "2019年1-2月"]]
-    # self.update_data()
-    # self.attribution_all_fund(date_list)
-    self.attribution_one_fund()
+    date_list = [['20190101', '20190329', "2019年1-3月"]]
+    self.update_data()
+    self.attribution_all_fund(date_list)
+    # self.attribution_one_fund()

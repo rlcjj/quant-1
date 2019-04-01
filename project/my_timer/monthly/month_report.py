@@ -120,8 +120,8 @@ class FundMonthReport(Data):
 
         """ 一段时间内基金排名（内部函数） """
 
-        from fund.fund_rank import rank_fund
-        val, pct = rank_fund(fund_code, rank_pool, beg_date, end_date, beg_date, excess=excess)
+        from fund.fund_rank import FundRank
+        val, pct = FundRank().rank_fund(fund_code, rank_pool, beg_date, end_date, beg_date, excess=excess)
         return val
 
     def insert_para(self, doc, strContent, font="仿宋_GB2312", size=12, space=12, align=0):
@@ -370,9 +370,9 @@ class FundMonthReport(Data):
 if __name__ == '__main__':
 
     self = FundMonthReport()
-    # self.load_param_file()
-    # self.generate_all_word()
-    # self.upload_file()
+    self.load_param_file()
+    self.generate_all_word()
+    self.upload_file()
     self.mail()
     os.system("pause")
 

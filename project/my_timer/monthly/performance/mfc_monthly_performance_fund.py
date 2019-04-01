@@ -201,7 +201,7 @@ class MfcMonthlyPerformanceFund(Data):
             excess = public_code.ix[i, '排名指标']
             new_fund_date = begin_date
 
-            val_str, val_pct = rank_fund(fund_code, rank_pool, begin_date, end_date, new_fund_date, excess)
+            val_str, val_pct = FundRank().rank_fund(fund_code, rank_pool, begin_date, end_date, new_fund_date, excess)
             public_code.ix[i, '基金排名'] = val_str
             public_code.ix[i, '基金排名百分比'] = val_pct
 
@@ -223,9 +223,9 @@ if __name__ == '__main__':
     end_date = Date().get_normal_date_last_month_end_day(datetime.today())
     print(end_date)
     self = MfcMonthlyPerformanceFund()
-    # self.update_data()
+    self.update_data()
     self.write_main(end_date)
-    # self.rank_all_fund(end_date)
+    self.rank_all_fund(end_date)
 
     """ 需要更新富时指数收益 """
     """ 出现的问题有 某些基金已关停 """

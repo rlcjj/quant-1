@@ -347,6 +347,64 @@ class FactorReturnSample(Data):
                            num_format_pd=num_format_pd, color="red", fillna=True)
         excel.close()
 
+    def concat_alpha(self, stock_pool_name):
+
+        """ 加权Alphpa """
+
+        if stock_pool_name == "hs300":
+            min_anto_corr = 0.85
+            min_ic_ir = 1.0
+        else:
+            min_anto_corr = 0.85
+            min_ic_ir = 1.5
+
+        filename = os.path.join(self.summary_path, 'AlphaSummary_%s.xlsx' % stock_pool_name)
+        data = pd.read_excel(filename, index_col=[1])
+        data = data.T.dropna(how='all').T
+        data = data[data['自相关系数'] > min_anto_corr]
+        data = data[data['ICIR'].abs() > min_ic_ir]
+        data['权重'] = data['ICIR']
+
+        res = pd.DataFrame()
+
+        for i in range(len(data)):
+
+            alpha_name = data.index[i]
+            file_postfix = (alpha_name, stock_pool_name)
+            file = os.path.join(self.exposure_path, 'res_exposure_%s_%s.csv' % file_postfix)
+            alpha = pd.read_csv(file, index_col=[0], encoding='gbk')
+            alpha.columns = alpha.columns.map(str)
+            alpha = alpha.T.dropna(how='all').T
+            weight = data.loc[alpha_name, "权重"]
+            date = alpha.columns[-1]
+            print("Get %s Factor At %s" % (alpha_name, date))
+            alpha_date = pd.DataFrame(alpha.loc[:, date]) * weight
+            alpha_date.columns = ['%s_score' % alpha_name]
+
+            # raw_data = AlphaFactor().get_alpha_factor_exposure(alpha_name)
+            # raw_date = pd.DataFrame(raw_data[date])
+            # raw_date.columns = [alpha_name]
+            # raw_date[raw_date == np.inf] = np.nan
+            # raw_date[raw_date == -np.inf] = np.nan
+            #
+            # factor_date = pd.concat([alpha_date, raw_date], axis=1)
+            # factor_date = factor_date.dropna()
+            res = pd.concat([res, alpha_date], axis=1)
+
+        res = res.dropna(how="all")
+        res["AlphaScore"] = res.sum(axis=1, skipna=True)
+        res = res.sort_values(by=['AlphaScore'], ascending=False)
+        res['Name'] = res.index.map(lambda x: Stock().get_stock_name_date(x, date))
+        # res.to_csv(os.path.join(self.summary_path, 'AlphaTotal_%s.csv' % stock_pool_name))
+
+        filename = os.path.join(self.summary_path, 'AlphaTotal_%s.xlsx' % stock_pool_name)
+        excel = WriteExcel(filename)
+        worksheet = excel.add_worksheet("Alpha打分%s" % stock_pool_name)
+        num_format_pd = pd.DataFrame([], columns=res.columns, index=['format'])
+        num_format_pd.loc['format', :] = '0.00'
+        excel.write_pandas(res, worksheet, begin_row_number=0, begin_col_number=1,
+                           num_format_pd=num_format_pd, color="red", fillna=True)
+        excel.close()
 
 if __name__ == '__main__':
 
@@ -359,13 +417,16 @@ if __name__ == '__main__':
     # self.cal_factor_summary(beg_date, end_date, factor_name, period)
 
     stock_pool_name = "AllChinaStockFilter"
-    self.cal_all_factor_summary(beg_date, end_date, period, stock_pool_name, 0)
-    self.concat_summary(stock_pool_name)
+    # self.cal_all_factor_summary(beg_date, end_date, period, stock_pool_name, 0)
+    # self.concat_summary(stock_pool_name)
+    self.concat_alpha(stock_pool_name)
 
     stock_pool_name = "hs300"
-    self.cal_all_factor_summary(beg_date, end_date, period, stock_pool_name, 0)
-    self.concat_summary(stock_pool_name)
+    # self.cal_all_factor_summary(beg_date, end_date, period, stock_pool_name, 0)
+    # self.concat_summary(stock_pool_name)
+    self.concat_alpha(stock_pool_name)
 
     stock_pool_name = "zz500"
-    self.cal_all_factor_summary(beg_date, end_date, period, stock_pool_name, 0)
-    self.concat_summary(stock_pool_name)
+    # self.cal_all_factor_summary(beg_date, end_date, period, stock_pool_name, 0)
+    # self.concat_summary(stock_pool_name)
+    self.concat_alpha(stock_pool_name)

@@ -11,6 +11,8 @@ from datetime import datetime
 
 def index_performance_main(end_month_date, save_path):
 
+    """ 各国指数涨幅 """
+
     pic_name = 'IndexPerformance'
     end_date = datetime.today().strftime("%Y%m%d")
 
@@ -37,14 +39,14 @@ def index_performance_main(end_month_date, save_path):
     email = EmailSender()
     email.attach_file(file_name)
     email.attach_picture_inside_body("各国指数涨跌幅", os.path.join(save_path, pic_name + '.png'))
-    email.send_mail_mfcteda(sender_mail_name, receivers_mail_name,
-                            acc_mail_name, subject_header)
+    email.send_mail_mfcteda(sender_mail_name, receivers_mail_name, acc_mail_name, subject_header)
 
     os.system("pause")
 
 
 if __name__ == '__main__':
 
-    end_month_date = "20190228"
+    end_month_date = Date().get_normal_date_last_month_end_day(datetime.today())
+    print(end_month_date)
     save_path = os.path.join(Data().primary_data_path, r'index_data\index_month_report')
     index_performance_main(end_month_date, save_path)

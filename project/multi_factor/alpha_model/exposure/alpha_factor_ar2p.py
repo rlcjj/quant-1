@@ -23,11 +23,13 @@ class AlphaAR2P(AlphaFactor):
         """ 计算因子暴露 """
 
         # read data
-        advance = Stock().read_factor_h5("AdvanceReceiptsDaily")
+        advance = Stock().read_factor_h5("AdvanceReceipts")
         total_share = Stock().read_factor_h5("TotalShare")
         price_unadjust = Stock().read_factor_h5("Price_Unadjust")
+        report_data = Stock().read_factor_h5("ReportDateDaily")
 
         # data precessing
+        advance = Stock().change_quarter_to_daily_with_disclosure_date(advance, report_data, beg_date, end_date)
         [total_share, price_unadjust] = Stock().make_same_index_columns([total_share, price_unadjust])
         total_mv = total_share.mul(price_unadjust)
         [advance, total_mv] = Stock().make_same_index_columns([advance, total_mv])

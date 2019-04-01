@@ -6,7 +6,7 @@ from quant.project.multi_factor.alpha_model.exposure.alpha_factor import AlphaFa
 class AlphaEP(AlphaFactor):
 
     """
-    因子说明: -最近季度净利润/总市值, 根据最新财报更新数据
+    因子说明: 最近季度净利润/总市值, 根据最新财报更新数据
     表明因子估值能力
     """
 

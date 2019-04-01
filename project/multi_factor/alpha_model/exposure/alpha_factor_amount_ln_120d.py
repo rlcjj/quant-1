@@ -23,7 +23,7 @@ class AlphaAmountLn120d(AlphaFactor):
         """ 计算因子暴露 """
 
         # params
-        long_term = 20
+        long_term = 120
         short_term = int(long_term * 0.5)
 
         # read data

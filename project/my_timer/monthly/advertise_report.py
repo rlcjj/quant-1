@@ -298,7 +298,7 @@ def mail(date):
 
 if __name__ == '__main__':
 
-    date = "20190308"
+    date = "20190329"
     update_data(date)
     # generate_excel_institution(date)
     # generate_word_institution(date)

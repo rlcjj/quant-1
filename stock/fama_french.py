@@ -3,14 +3,16 @@ import os
 import numpy as np
 import pandas as pd
 import statsmodels.api as sm
-from project.multi_factor.alpha_model.exposure.BP import BP
-from project.multi_factor.alpha_model.exposure.ROEQuarterDaily import ROEQuarterDaily
+
 from quant.data.data import Data
-from quant.project.multi_factor.alpha_model.exposure.normal.TotalAssetYOYDaily import TotalAssetYOYDaily
 from quant.stock.date import Date
 from quant.stock.index import Index
 from quant.stock.macro import Macro
 from quant.stock.stock import Stock
+
+from quant.project.multi_factor.alpha_model.exposure.alpha_factor_bp import AlphaBP
+from quant.project.multi_factor.alpha_model.exposure.alpha_factor_roe import AlphaROE
+from quant.project.multi_factor.alpha_model.exposure.alpha_factor_asset_yoy import AlphaAssetYoY
 
 
 class FamaFrench(Data):
@@ -31,9 +33,9 @@ class FamaFrench(Data):
         """ 下载更新模型需要的数据 """
 
         # Stock().load_h5_primary_factor()
-        BP(beg_date, end_date)
-        ROEQuarterDaily(beg_date, end_date)
-        TotalAssetYOYDaily(beg_date, end_date)
+        AlphaBP().cal_factor_exposure(beg_date, end_date)
+        AlphaROE().cal_factor_exposure(beg_date, end_date)
+        AlphaAssetYoY().cal_factor_exposure(beg_date, end_date)
 
     def cal_all_factor_pct(self):
 
@@ -392,15 +394,16 @@ class FamaFrench(Data):
 
 if __name__ == '__main__':
 
+    from datetime import datetime
     beg_date = "20190101"
-    end_date = "20190321"
+    today = datetime.today().strftime("%Y%m%d")
     self = FamaFrench()
 
-    # self.load_data(beg_date, end_date)
+    self.load_data(beg_date, today)
     self.cal_all_factor_pct()
     # self.ff3_model(beg_date, end_date)
     # self.ff3_model("20180101", "20190228")
     # self.ff3_model("20150101", "20180101")
-    self.ff3_model("20100101", "20150101")
-    self.ff3_model("20050101", "20100101")
-    self.ff5_model("20180101", "20190228")
+    # self.ff3_model("20100101", "20150101")
+    self.ff3_model("20060101", "20100101")
+    self.ff5_model("20180101", today)

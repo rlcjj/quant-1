@@ -91,7 +91,7 @@ class WriteExcel(object):
             data = data.copy()
             data = self.change_pandas_index(data)
             num_format_pd = self.change_pandas_index(num_format_pd)
-            num_format_pd.ix['format', 'index'] = ""
+            num_format_pd.loc['format', 'index'] = ""
 
         if fillna:
             for i_col in range(len(data.columns)):
