@@ -56,11 +56,11 @@ if __name__ == "__main__":
     # Data
     ##########################################################################################
     from quant.stock.barra import Barra
-    from quant.stock.stock_factor_data import StockFactorData
+    from quant.project.multi_factor.alpha_model.exposure.alpha_factor import AlphaFactor
 
-    name = 'TurnOverBias6m3m'
+    name = 'alpha_raw_ep'
     date = "20171229"
-    data_pandas = StockFactorData().read_factor_h5(name, StockFactorData().get_h5_path(type='my_alpha'))
+    data_pandas = AlphaFactor().get_alpha_factor_exposure(name)
     factor_series = data_pandas[date]
     neutral_frame = Barra().get_factor_exposure_date(date, type_list=['STYLE', 'INDUSTRY'])
 

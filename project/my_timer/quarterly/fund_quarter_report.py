@@ -53,9 +53,11 @@ class FundQuarterReport(Data):
 
         data_report = MfcData().get_fund_stock_weight(fund_name=fund_name, date=report_date)
         data_report.columns = ['NowHolder']
+        data_report = data_report[~data_report.index.duplicated()]
 
         data_report_last = MfcData().get_fund_stock_weight(fund_name=fund_name, date=last_report_date)
         data_report_last.columns = ['LastHolder']
+        data_report_last = data_report_last[~data_report_last.index.duplicated()]
 
         industry = Stock().read_factor_h5("industry_citic1")
         industry_date = pd.DataFrame(industry[report_date])
@@ -223,9 +225,9 @@ class FundQuarterReport(Data):
 if __name__ == '__main__':
 
     self = FundQuarterReport()
-    self.load_param_file()
-    self.generate_all_report()
-    self.upload_file()
+    # self.load_param_file()
+    # self.generate_all_report()
+    # self.upload_file()
     self.mail_liuxin()
     # self.mail_liuyang()
 

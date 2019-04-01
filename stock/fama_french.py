@@ -10,6 +10,7 @@ from quant.stock.index import Index
 from quant.stock.macro import Macro
 from quant.stock.stock import Stock
 
+from quant.project.multi_factor.alpha_model.exposure.alpha_factor import AlphaFactor
 from quant.project.multi_factor.alpha_model.exposure.alpha_factor_bp import AlphaBP
 from quant.project.multi_factor.alpha_model.exposure.alpha_factor_roe import AlphaROE
 from quant.project.multi_factor.alpha_model.exposure.alpha_factor_asset_yoy import AlphaAssetYoY
@@ -124,7 +125,7 @@ class FamaFrench(Data):
         """ 计算高估值股票相对于低估值股票的超额收益（分成三组） """
 
         name = "HMI"
-        bp = Stock().read_factor_h5("BP", Stock().get_h5_path("my_alpha"))
+        bp = AlphaFactor().get_alpha_factor_exposure("alpha_raw_bp")
         stock_pct = Stock().read_factor_h5("Pct_chg")
 
         date_series = list(set(stock_pct.columns) & set(bp.columns))
@@ -159,7 +160,7 @@ class FamaFrench(Data):
         """ 计算高ROE股票相对于低ROE股票的超额收益（分成三组） """
 
         name = "RMW"
-        bp = Stock().read_factor_h5("ROEQuarterDaily", Stock().get_h5_path("my_alpha"))
+        bp = AlphaFactor().get_alpha_factor_exposure("alpha_raw_roe")
         stock_pct = Stock().read_factor_h5("Pct_chg")
 
         date_series = list(set(stock_pct.columns) & set(bp.columns))
@@ -194,7 +195,7 @@ class FamaFrench(Data):
         """ 计算高资产增长率股票相对于低资产增长率股票的超额收益（分成三组）投资水平风险代表投资风险水平 """
 
         name = "CMA"
-        bp = Stock().read_factor_h5("TotalAssetYOYDaily", Stock().get_h5_path("my_alpha"))
+        bp = AlphaFactor().get_alpha_factor_exposure("alpha_raw_asset_yoy")
         stock_pct = Stock().read_factor_h5("Pct_chg")
 
         date_series = list(set(stock_pct.columns) & set(bp.columns))
@@ -399,7 +400,7 @@ if __name__ == '__main__':
     today = datetime.today().strftime("%Y%m%d")
     self = FamaFrench()
 
-    self.load_data(beg_date, today)
+    # self.load_data(beg_date, today)
     self.cal_all_factor_pct()
     # self.ff3_model(beg_date, end_date)
     # self.ff3_model("20180101", "20190228")
