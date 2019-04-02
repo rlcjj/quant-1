@@ -1,12 +1,12 @@
 import os
 import numpy as np
 import pandas as pd
+import statsmodels.api as sm
 
 from quant.data.data import Data
 from quant.stock.date import Date
 from quant.stock.stock import Stock
 from quant.stock.barra import Barra
-from quant.utility.factor_neutral import FactorNeutral
 from quant.project.multi_factor.alpha_model.exposure.alpha_factor import AlphaFactor
 
 
@@ -28,7 +28,7 @@ class AlphaSplitSample(Data):
         self.csv_res_path = os.path.join(self.data_path, "res_alpha\csv")
         self.hdf_risk_path = os.path.join(self.data_path, "exposure_risk\hdf")
         self.csv_risk_path = os.path.join(self.data_path, "exposure_risk\csv")
-        self.min_stock_number = 100
+        self.min_stock_number = 0
 
     def get_alpha_res_exposure(self, factor_name):
 
@@ -42,7 +42,6 @@ class AlphaSplitSample(Data):
         """ 得到Alpha在风险因子上的暴露 """
 
         data = Stock().read_factor_h5(factor_name, self.hdf_risk_path)
-        print(data)
         return data
 
     def save_alpha_res_exposure(self, data, factor_name):
@@ -76,13 +75,12 @@ class AlphaSplitSample(Data):
         for i_date in range(len(date_series)):
 
             date = date_series[i_date]
-            print("Split %s Alpha Exposure At %s %s" % (factor_name, date, stock_pool_name))
 
             alpha_date = pd.DataFrame(alpha[date])
             alpha_date.columns = ['Alpha']
             alpha_date = alpha_date.dropna()
 
-            risk_exposure = Barra().get_factor_exposure_date(date, type_list=['STYLE', 'INDUSTRY'])
+            risk_exposure = Barra().get_factor_exposure_date(date, type_list=['STYLE', 'INDUSTRY', "COUNTRY"])
 
             stock_pool = Stock().get_invest_stock_pool(date=date, stock_pool_name=stock_pool_name)
             stock_pool = list(set(stock_pool) & set(risk_exposure.index) & set(alpha_date.index))
@@ -91,16 +89,31 @@ class AlphaSplitSample(Data):
             alpha_date = alpha_date.loc[stock_pool, "Alpha"]
             risk_exposure = risk_exposure.loc[stock_pool, :]
 
-            if len(alpha_date) > self.min_stock_number:
+            concat_data = pd.concat([alpha_date, risk_exposure], axis=1)
+            concat_data = concat_data.dropna()
 
-                params, t_values, res_alpha_date = FactorNeutral().factor_exposure_neutral(alpha_date, risk_exposure)
+            if len(concat_data) > self.min_stock_number:
+
+                factor_val = concat_data.iloc[:, 0]
+                neutral_val = concat_data.iloc[:, 1:]
+                print("Split %s Alpha Exposure At %s %s" % (factor_name, date, stock_pool_name))
+
+                model = sm.OLS(factor_val.values, neutral_val.values)
+                regress = model.fit()
+
+                params = pd.DataFrame(regress.params, index=neutral_val.columns, columns=['param'])
+                factor_res = factor_val - regress.predict(neutral_val)
+
                 params = pd.DataFrame(params)
                 params.columns = [date]
-                res_alpha_date = pd.DataFrame(res_alpha_date)
+                res_alpha_date = pd.DataFrame(factor_res)
                 res_alpha_date.columns = [date]
 
-            exposure_risk = pd.concat([exposure_risk, params], axis=1)
-            res_alpha = pd.concat([res_alpha, res_alpha_date], axis=1)
+                exposure_risk = pd.concat([exposure_risk, params], axis=1)
+                res_alpha = pd.concat([res_alpha, res_alpha_date], axis=1)
+
+            else:
+                print("Split %s Alpha Exposure At %s %s is Null" % (factor_name, date, stock_pool_name))
 
         self.save_alpha_risk_exposure(exposure_risk, factor_name)
         self.save_alpha_res_exposure(res_alpha, factor_name)

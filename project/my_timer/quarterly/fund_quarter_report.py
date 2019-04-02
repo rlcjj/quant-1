@@ -228,6 +228,6 @@ if __name__ == '__main__':
     # self.load_param_file()
     # self.generate_all_report()
     # self.upload_file()
-    self.mail_liuxin()
-    # self.mail_liuyang()
+    # self.mail_liuxin()
+    self.mail_liuyang()
 

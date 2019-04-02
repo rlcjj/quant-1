@@ -34,11 +34,11 @@ def fund_holding_update():
 
     print("########## 更新股票池 基金规模 ###############")
     # Fund().load_fund_pool_all(date)
-    # Fund().load_fund_factor("Total_Asset", "20180101", datetime.today())
+    Fund().load_fund_factor("Total_Asset", "20180101", datetime.today())
 
     print("########## 基金持仓股票 ###############")
-    # Fund().load_fund_holding_stock("19991231", datetime.today())
-    # Fund().load_fund_holding_industry("19991231", datetime.today())
+    Fund().load_fund_holding_stock("19991231", datetime.today())
+    Fund().load_fund_holding_industry("19991231", datetime.today())
     # Fund().cal_fund_stock_weight_halfyear()
     # Fund().cal_fund_stock_weight_quarter()
 

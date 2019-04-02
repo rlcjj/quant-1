@@ -393,18 +393,25 @@ class FamaFrench(Data):
         assetyoy_beta.to_csv(os.path.join(path, "FF5_AssetYOY.csv"))
         res_return.to_csv(os.path.join(path, "FF5_ResidualReturn.csv"))
 
+    def get_data(self, model_name="model_ff3", factor_name="FF3_Alpha"):
+
+        """ 得到数据 """
+        path = os.path.join(self.data_path, model_name)
+        data = Stock().read_factor_h5(factor_name=factor_name, path=path)
+        return data
+
 if __name__ == '__main__':
 
     from datetime import datetime
     beg_date = "20190101"
     today = datetime.today().strftime("%Y%m%d")
+    model_name = "model_ff3"
+    factor_name = "FF3_Alpha"
+
     self = FamaFrench()
 
     # self.load_data(beg_date, today)
-    self.cal_all_factor_pct()
+    # self.cal_all_factor_pct()
     # self.ff3_model(beg_date, end_date)
-    # self.ff3_model("20180101", "20190228")
-    # self.ff3_model("20150101", "20180101")
-    # self.ff3_model("20100101", "20150101")
-    self.ff3_model("20060101", "20100101")
-    self.ff5_model("20180101", today)
+    # self.ff5_model("20150101", "20180101")
+    print(self.get_data(model_name, factor_name))

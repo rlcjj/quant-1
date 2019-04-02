@@ -9,12 +9,17 @@ from quant.stock.stock import Stock
 from quant.stock.barra import Barra
 from quant.utility.write_excel import WriteExcel
 from quant.utility.factor_neutral import FactorNeutral
+from quant.project.multi_factor.alpha_model.split.alpha_split_sample import AlphaSplitSample
 from quant.project.multi_factor.alpha_model.exposure.alpha_factor import AlphaFactor
 
 
 class FactorReturnSample(Data):
 
-    """ 简单测试Alpha因子 """
+    """
+    Alpha因子简单拆分后
+    周度测试
+    简单测试Alpha因子
+    """
 
     def __init__(self):
 
