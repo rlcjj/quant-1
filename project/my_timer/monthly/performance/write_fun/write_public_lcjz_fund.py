@@ -1,8 +1,8 @@
 from datetime import datetime
 
-from fund.fund_rank import *
-from mfc.mfc_table import *
 from quant.utility.write_excel import WriteExcel
+
+from data.mfc.mfc_table import *
 
 
 def write_public_lcjz(end_date, save_path):

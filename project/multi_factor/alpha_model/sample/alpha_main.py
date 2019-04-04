@@ -1,12 +1,17 @@
 import os
 import numpy as np
 import pandas as pd
+import statsmodels.api as sm
 
+from quant.data.data import Data
 from quant.stock.date import Date
 from quant.stock.stock import Stock
+from quant.stock.barra import Barra
+from quant.utility.factor_preprocess import FactorPreProcess
+from quant.project.multi_factor.alpha_model.exposure.alpha_factor import AlphaFactor
 
 
-class AlphaCompound(object):
+class AlphaSimpleMain(object):
 
     """ 原始因子合成新的因子 """
 

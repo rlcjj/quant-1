@@ -1,7 +1,6 @@
 import calendar
 from datetime import datetime
 
-from fund.fund_rank import *
 from quant.data.data import Data
 from quant.mfc.mfc_data import MfcData
 from quant.stock.index import Index

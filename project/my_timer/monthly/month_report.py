@@ -120,7 +120,7 @@ class FundMonthReport(Data):
 
         """ 一段时间内基金排名（内部函数） """
 
-        from fund.fund_rank import FundRank
+        from data.fund import FundRank
         val, pct = FundRank().rank_fund(fund_code, rank_pool, beg_date, end_date, beg_date, excess=excess)
         return val
 

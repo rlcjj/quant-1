@@ -13,7 +13,6 @@ class AlphaFactor(Data):
 
     """
     所有Alpha因子的父类
-
     注意不管是风险模型、还是alpha模型，其模型的构造都和股票池相关
     """
 
@@ -62,6 +61,14 @@ class AlphaFactor(Data):
 
         return data
 
+    def get_major_alpha_name(self):
+
+        """ 得到 Alpha 大类因子名 """
+        
+        factor_list = self.get_all_alpha_factor_file()
+        major_factor_list = list(set(factor_list.index))
+        return major_factor_list
+
     def get_standard_alpha_factor(self, factor_name):
 
         """ 预处理Alpha因子 包括去极值、标准化 """
@@ -79,4 +86,5 @@ if __name__ == '__main__':
     beg_date, end_date, period = None, None, "D"
 
     self = AlphaFactor()
-    self.get_alpha_factor_exposure(factor_name)
+    # self.get_alpha_factor_exposure(factor_name)
+    print(self.get_major_alpha_name())

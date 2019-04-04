@@ -98,6 +98,10 @@ class NiceStockFund(Data):
         fund_return.cal_fund_regression_risk_alpha_return_index_all(beg_date, end_date,
                                                                     fund_pool=fund_pool_name, file_rewrite=True)
 
+        beg_date = Date().get_trade_date_offset(end_date, -120)
+        print("计算所有股票型基金的持仓暴露 %s To %s ......" % (beg_date, end_date))
+        FundExposure().cal_fund_holder_exposure_halfyear_all(beg_date, end_date, fund_pool_name)
+
     def get_fund_pool(self, end_date):
 
         """ 成立时间满足一定时间的基金 """

@@ -29,6 +29,7 @@ class RiskFactorFundETFHolder(RiskFactor):
         Stock().load_all_stock_code_now()
         Fund().load_fund_holding_stock()
         Fund().load_fund_factor_all(beg_date, end_date)
+        Stock().load_h5_primary_factor()
 
     @staticmethod
     def get_etf_fund_code_list():

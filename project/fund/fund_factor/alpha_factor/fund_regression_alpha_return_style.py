@@ -2,9 +2,10 @@ import os
 
 import numpy as np
 import pandas as pd
-from fund.exposure_return.regression.fund_regression_risk_alpha_return_style import FundRegressionRiskAlphaReturnStyle
 from quant.fund.fund_pool import FundPool
 from quant.stock.date import Date
+
+from data.fund.exposure_return.regression import FundRegressionRiskAlphaReturnStyle
 
 
 class FundRegressionReturnStyleBackTest(object):

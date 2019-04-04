@@ -2,9 +2,10 @@ import os
 
 import numpy as np
 import pandas as pd
-from fund.exposure_return.holder.fund_holder_risk_alpha_return_halfyear import FundHolderRiskAlphaReturnHalfYear
 from quant.fund.fund_pool import FundPool
 from quant.stock.date import Date
+
+from data.fund import FundHolderRiskAlphaReturnHalfYear
 
 
 class FundHolderReturnHalfYearBackTest(object):

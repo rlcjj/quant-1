@@ -1,6 +1,7 @@
 import os
 import numpy as np
 import pandas as pd
+import shutil
 import statsmodels.api as sm
 from datetime import datetime
 
@@ -8,6 +9,7 @@ from quant.data.data import Data
 from quant.stock.date import Date
 from quant.stock.stock import Stock
 from quant.utility.write_excel import WriteExcel
+from quant.utility.pandas_to_txt import PandasToTxt
 
 
 class RiskFactor(Data):
@@ -50,6 +52,7 @@ class RiskFactor(Data):
         self.data_path = os.path.join(self.primary_data_path, self.sub_data_path)
         self.exposure_hdf_path = os.path.join(self.data_path, r'factor\hdf')
         self.exposure_csv_path = os.path.join(self.data_path, r'factor\csv')
+        self.exposure_txt_path = os.path.join(self.data_path, r'factor\txt')
         self.factor_performance_path = os.path.join(self.data_path, r'factor_performance')
 
     def get_risk_factor_exposure(self, factor_name):
@@ -71,13 +74,29 @@ class RiskFactor(Data):
 
         """ 将因子生成邮件 patch 格式 """
 
-        data = self.get_risk_factor_exposure(factor_name, beg_date, end_date).T
-        data = data.loc[beg_date:end_date, :]
+        data = self.get_risk_factor_exposure(factor_name)
+        data = data.loc[:, beg_date:end_date]
         date_series = Date().get_trade_date_series(beg_date, end_date)
-        date_series = list(set(date_series) & set(data.index))
+        date_series = list(set(date_series) & set(data.columns))
+        date_series.sort()
+
+        path = os.path.join(self.exposure_txt_path, factor_name)
+        if os.path.exists(path):
+            shutil.rmtree(path)
 
         for date in date_series:
-            data_date = data.loc[date, :]
+            data_date = pd.DataFrame(data[date])
+            data_date.columns = [factor_name]
+            data_date = data_date.dropna()
+            data_date = data_date.round(6)
+
+            if len(data_date) > 0:
+                print("Patch Txt File %s %s" % (factor_name, date))
+
+                if not os.path.exists(path):
+                    os.makedirs(path)
+                file = os.path.join(path, "%s_%s.txt" % (factor_name, date))
+                PandasToTxt().to_txt(data_date, file)
 
     def update_risk_factor_exposure(self, factor_name, beg_date, end_date, force=False):
 
@@ -258,15 +277,18 @@ if __name__ == '__main__':
     beg_date = "20101010"
     end_date = "20180101"
     stock_pool_name = "AllChinaStockFilter"
-    factor_name = "cne5_normal_bp"
-    self.risk_factor_performance("risk_normal_fund_etf_holder", period=period, stock_pool_name=stock_pool_name)
-    self.risk_factor_performance("risk_raw_gem", period=period, stock_pool_name=stock_pool_name)
+    factor_name = "risk_raw_fund_etf_holder"
 
-    # 测试多个 Risk Factor
-    from quant.project.multi_factor.risk_model.model.risk_model import RiskModel
-    rm = RiskModel()
-    rm.set_model_name("cne5")
-    risk_factor_list = rm.get_risk_factor_list()
+    self.generate_patch_file(factor_name, "20190315", "20190403")
 
-    for factor_name in risk_factor_list:
-        self.risk_factor_performance(factor_name, period=period, stock_pool_name=stock_pool_name)
+    # self.risk_factor_performance("risk_normal_fund_etf_holder", period=period, stock_pool_name=stock_pool_name)
+    # self.risk_factor_performance("risk_raw_gem", period=period, stock_pool_name=stock_pool_name)
+    #
+    # # 测试多个 Risk Factor
+    # from quant.project.multi_factor.risk_model.model.risk_model import RiskModel
+    # rm = RiskModel()
+    # rm.set_model_name("cne5")
+    # risk_factor_list = rm.get_risk_factor_list()
+    #
+    # for factor_name in risk_factor_list:
+    #     self.risk_factor_performance(factor_name, period=period, stock_pool_name=stock_pool_name)

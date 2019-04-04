@@ -7,11 +7,10 @@ from quant.data.data import Data
 from quant.stock.date import Date
 from quant.stock.stock import Stock
 from quant.utility.write_excel import WriteExcel
-from quant.project.multi_factor.alpha_model.exposure.alpha_factor import AlphaFactor
-from quant.project.multi_factor.alpha_model.split.alpha_split_sample import AlphaSplitSample
+from quant.project.multi_factor.alpha_model.sample.alpha_split import AlphaSplit
 
 
-class SampleSplitReturn(Data):
+class AlphaSummary(Data):
 
     """
     Alpha因子简单拆分后
@@ -37,7 +36,7 @@ class SampleSplitReturn(Data):
         """ 计算Alpha因子收益率 """
 
         price = Stock().read_factor_h5("Price_Unadjust")
-        alpha_res = AlphaSplitSample().get_alpha_res_exposure(factor_name, stock_pool_name)
+        alpha_res = AlphaSplit().get_alpha_res_exposure(factor_name, stock_pool_name)
 
         date_series = Date().get_trade_date_series(beg_date, end_date, period=period)
         date_series = list(set(date_series) & set(alpha_res.columns) & set(price.columns))
@@ -114,6 +113,17 @@ class SampleSplitReturn(Data):
         alpha_return.index = alpha_return.index.map(str)
         return alpha_return
 
+    def get_factor_icir(self, beg_date, end_date, factor_name, period="W", stock_pool_name="AllChinaStockFilter"):
+
+        """ 得到一段时间的 ICIR的情况 """
+
+        data = self.get_factor_return(factor_name, stock_pool_name)
+        data = data.loc[beg_date:end_date, :]
+        year_number = Date().get_period_number_for_year(period)
+        icir = data["IC"].mean() / data["IC"].std() * np.sqrt(year_number)
+
+        return icir
+
     def cal_factor_summary(self, beg_date, end_date, factor_name, period="W", stock_pool_name="AllChinaStockFilter"):
 
         """ 计算每年的因子表现（首先得计算因子收益率 残差因子暴露等信息） """
@@ -155,7 +165,7 @@ class SampleSplitReturn(Data):
             label = summary.index[i]
             bdate = summary.loc[label, "开始时间"]
             edate = summary.loc[label, "结束时间"]
-            corr_mean = AlphaSplitSample().get_alpha_res_corr(factor_name, bdate, edate, period, stock_pool_name)
+            corr_mean = AlphaSplit().get_alpha_res_corr(factor_name, bdate, edate, period, stock_pool_name)
             summary.loc[label, "自相关系数"] = corr_mean
 
         # group 部分:每年 分组收益等
@@ -168,9 +178,6 @@ class SampleSplitReturn(Data):
             corr_pd = pd.DataFrame(group.loc[year, self.labels].values, index=self.labels, columns=['group_return'])
             corr_pd['group_number'] = (list(range(1, self.group_number + 1)))
             group.loc[year, 'Group_Corr'] = corr_pd.corr().iloc[0, 1]
-
-
-
 
         # 写入Excel
         path = os.path.join(self.summary_path, stock_pool_name)
@@ -205,8 +212,7 @@ class SampleSplitReturn(Data):
         try:
 
             # 风险暴露部分:每年Alpha在risk上的暴露
-
-            alpha_risk = AlphaSplitSample().get_alpha_risk_exposure(factor_name, stock_pool_name).T
+            alpha_risk = AlphaSplit().get_alpha_risk_exposure(factor_name, stock_pool_name).T
             alpha_risk['year'] = alpha_risk.index.map(lambda x: datetime.strptime(str(x), "%Y%m%d").year)
             alpha_risk = alpha_risk.groupby(by=['year']).mean()
             alpha_risk.loc['All', :] = alpha_risk.mean()
@@ -223,7 +229,7 @@ class SampleSplitReturn(Data):
                                      insert_pos="N%s" % pos_pic, cat_beg="AA1", cat_end="AJ1",
                                      val_beg_list=["AA%s" % pos_end], val_end_list=["AJ%s" % pos_end])
         except:
-            pass
+            print("没有残差因子在风险上的暴露程度")
 
         excel.close()
 
@@ -231,8 +237,7 @@ class SampleSplitReturn(Data):
 
         """ 计算所有因子收益率 """
 
-        factor_list = AlphaSplitSample().get_all_alpha_factor_name(stock_pool_name)
-        print(factor_list)
+        factor_list = AlphaSplit().get_all_alpha_factor_name(stock_pool_name)
 
         for i in range(0, len(factor_list)):
 
@@ -249,8 +254,7 @@ class SampleSplitReturn(Data):
 
         """ 计算所有因子表现 """
 
-        factor_list = AlphaSplitSample().get_all_alpha_factor_name(stock_pool_name)
-        print(factor_list)
+        factor_list = AlphaSplit().get_all_alpha_factor_name(stock_pool_name)
 
         for i in range(0, len(factor_list)):
 
@@ -267,7 +271,7 @@ class SampleSplitReturn(Data):
 
         """ 所有因子回测结果汇总 """
 
-        factor_list = AlphaSplitSample().get_all_alpha_factor_name(stock_pool_name)
+        factor_list = AlphaSplit().get_all_alpha_factor_name(stock_pool_name)
         all_data = pd.DataFrame()
 
         for i in range(0, len(factor_list)):
@@ -300,19 +304,27 @@ class SampleSplitReturn(Data):
                            num_format_pd=num_format_pd, color="red", fillna=True)
         excel.close()
 
+    def get_concat_summary(self, stock_pool_name):
+
+        """ 得到所有因子测试结果 """
+
+        filename = os.path.join(self.summary_path, 'AlphaSummary_%s.xlsx' % stock_pool_name)
+        data = pd.read_excel(filename, index_col=[1])
+        data = data.T.dropna(how='all').T
+        return data
+
 
 if __name__ == '__main__':
 
-    self = SampleSplitReturn()
+    """ 计算一个因子 """
+    self = AlphaSummary()
     beg_date, end_date, period = "20040101", datetime.today().strftime("%Y%m%d"), "W"
-
-    # 计算一个因子
-    # factor_name = "daily_alpha_raw_ts_rank9"
-    # stock_pool_name = "AllChinaStockFilter"
+    factor_name = "daily_alpha_raw_ts_rank9"
+    stock_pool_name = "AllChinaStockFilter"
     # self.cal_factor_return(beg_date, end_date, factor_name, period, stock_pool_name)
     # self.cal_factor_summary(beg_date, end_date, factor_name, period)
 
-    # 计算所有因子在某个股票池
+    """ 计算所有因子在某个股票池 """
     stock_pool_name = "AllChinaStockFilter"
     self.cal_all_factor_return(beg_date, end_date, period, stock_pool_name, 0)
     self.cal_all_factor_summary(beg_date, end_date, period, stock_pool_name, 0)

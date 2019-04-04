@@ -1,5 +1,4 @@
 import os
-import numpy as np
 import pandas as pd
 import statsmodels.api as sm
 
@@ -11,13 +10,12 @@ from quant.utility.factor_preprocess import FactorPreProcess
 from quant.project.multi_factor.alpha_model.exposure.alpha_factor import AlphaFactor
 
 
-class AlphaSplitSample(Data):
+class AlphaSplit(Data):
 
     """
-    Alpha因子直接剥离风险因子
-    风险模型可以选择Barra模型、也可以选择自己的风险模型
-    收益率也要拆分成分残差收益
-    直接采用简单线性回归的方式
+    1、直接采用简单线性回归的方式，计算Alpha残差暴露
+    2、计算Alpha在风险因子上的暴露程度
+    3、计算残差Alpha暴露的稳定性
     """
 
     def __init__(self):
@@ -176,13 +174,17 @@ class AlphaSplitSample(Data):
 
 if __name__ == "__main__":
 
-    self = AlphaSplitSample()
+    """ 计算单个因子 """
+
+    self = AlphaSplit()
     beg_date, end_date, period = "20040101", "20190329", "W"
     stock_pool_name = "AllChinaStockFilter"
     factor_name = "alpha_raw_ep"
-    # self.split_alpha(beg_date, end_date, factor_name, period, stock_pool_name)
-    # print(self.get_alpha_res_corr(factor_name, beg_date, end_date, period, stock_pool_name))
-    # print(self.get_alpha_risk_exposure(factor_name, stock_pool_name))
-    # self.split_alpha_all(beg_date, end_date, period, "AllChinaStockFilter")
-    # self.split_alpha_all(beg_date, end_date, period, "hs300")
+    self.split_alpha(beg_date, end_date, factor_name, period, stock_pool_name)
+    print(self.get_alpha_res_corr(factor_name, beg_date, end_date, period, stock_pool_name))
+    print(self.get_alpha_risk_exposure(factor_name, stock_pool_name))
+
+    """ 计算所有因子 """
+    self.split_alpha_all(beg_date, end_date, period, "AllChinaStockFilter")
+    self.split_alpha_all(beg_date, end_date, period, "hs300")
     self.split_alpha_all(beg_date, end_date, period, "zz500")

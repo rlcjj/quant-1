@@ -1,12 +1,13 @@
 import os
-import pandas as pd
 from datetime import datetime
 
-from quant.stock.date import Date
-from quant.stock.index import Index
+import pandas as pd
 from quant.source.backtest import BackTest
 from quant.source.wind_portfolio import WindPortUpLoad
-from fund.exposure_return.regression.fund_regression_exposure_index import FundRegressionExposure
+from quant.stock.date import Date
+from quant.stock.index import Index
+
+from data.fund.exposure_return.regression import FundRegressionExposure
 
 
 class IndexOlsRegression(object):

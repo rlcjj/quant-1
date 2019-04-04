@@ -8,7 +8,7 @@ if __name__ == '__main__':
 
     self = CalIPOBuy()
     today = datetime.today().strftime("%Y%m%d")
-    # self.load_param_file(today)
+    self.load_param_file(today)
     self.ipo_buy_online(today)
     self.ipo_buy_outline(today)
 
