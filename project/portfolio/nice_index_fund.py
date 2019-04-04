@@ -3,9 +3,6 @@ import numpy as np
 import pandas as pd
 from datetime import datetime
 
-from WindPy import w
-w.start()
-
 from quant.data.data import Data
 from quant.fund.fund import Fund
 from quant.stock.date import Date
@@ -14,6 +11,9 @@ from quant.stock.barra import Barra
 from quant.source.backtest import BackTest
 from quant.source.wind_portfolio import WindPortUpLoad
 from quant.utility.write_excel import WriteExcel
+
+from WindPy import w
+w.start()
 
 
 class NiceIndexFund(Data):

@@ -175,7 +175,7 @@ class NiceStockFund(Data):
 
         """ 计算回归超额收益 """
         print("Project Nice Stock Fund Getting Regression Alpha at %s ......" % end_date)
-        beg_date = Date().get_trade_date_offset(end_date, -self.alpha_len)
+        beg_date = Date().get_trade_date_offset(end_date, -self.alpha_len-1)
         fund_pool = self.get_fund_pool(end_date)
         fund_factor = pd.DataFrame([], index=fund_pool.index, columns=['RegressAlpha', 'RegressAlphaIR'])
         fund_return = FundReturnDecomposition()
@@ -188,7 +188,7 @@ class NiceStockFund(Data):
                 alpha = fund_return.get_fund_regression_risk_alpha_return_index(fund_code)
                 alpha_period = alpha.loc[beg_date:end_date, :]
                 alpha_period['AlphaReturn'] *= 100.0
-                if len(alpha_period) >= self.alpha_len:
+                if len(alpha_period) >= int(0.8*self.alpha_len):
                     alpha_return = alpha_period['AlphaReturn'].mean() * 250
                     alpha_std = alpha_period['AlphaReturn'].std() * np.sqrt(250)
                     fund_factor.loc[fund_code, "RegressAlpha"] = alpha_return
@@ -237,10 +237,10 @@ class NiceStockFund(Data):
         print("Project Nice Stock Fund Getting All Factor at %s ......" % end_date)
         # fund_manager = self.get_fund_manager_info(beg_date, end_date)
         fund_pool = self.get_fund_pool(end_date)
-        fund_holder_alpha = self.get_holder_halfyear_alpha(end_date)
+        # fund_holder_alpha = self.get_holder_halfyear_alpha(end_date)
         fund_index_alpha = self.get_regression_index_alpha(end_date)
         fund_exposure = self.get_fund_risk_exposure(end_date)
-        fund_factor = pd.concat([fund_pool, fund_holder_alpha, fund_index_alpha, fund_exposure], axis=1)
+        fund_factor = pd.concat([fund_pool, fund_index_alpha, fund_exposure], axis=1)
 
         fund_factor = fund_factor.dropna(subset=[self.alpha_column])
         fund_factor = fund_factor.sort_values(by=[self.alpha_column], ascending=False)
@@ -385,7 +385,7 @@ class NiceStockFund(Data):
             data = data[data['Weight'] > 0.0]
             result = pd.concat([data, exposure_result.T], axis=0)
             col = ["SecName", "InvestType", "Corp", "SetupDate", "Weight",
-                   "HalfYearAlpha", "RegressAlpha", "RegressAlphaIR", "FundReturn"]
+                   "RegressAlpha", "RegressAlphaIR"]
             col.extend(risk_factor_list)
             result = result[col]
             path = os.path.join(self.data_path, 'fund_opt')
@@ -471,8 +471,8 @@ if __name__ == "__main__":
     """
 
     # 更新基金Alpha
-    self = NiceStockFund()
-    self.update_data()
+    # self = NiceStockFund()
+    # self.update_data()
 
     # 1、主动股票型基金优选750AlphaIR
     fund_pool_name = "基金持仓基准基金池"
@@ -480,8 +480,9 @@ if __name__ == "__main__":
     alpha_len = 750
     alpha_column = "RegressAlphaIR"
     port_name = "主动股票型基金优选750AlphaIR"
-    beg_date = "20180401"
-    end_date = datetime.today().strftime("%Y%m%d")
+    beg_date = "20181201"
+    end_date = "20190404"
+    end_last_date = Date().get_trade_date_offset(end_date, -1)
     bench_code = "885000.WI"
     style_deviate = 0.20
     position_deviate = 0.02
@@ -490,10 +491,15 @@ if __name__ == "__main__":
 
     self = NiceStockFund(fund_pool_name, benchmark_name, alpha_len, alpha_column, port_name,
                          style_deviate, position_deviate, fund_up_ratio, turnover)
-    self.cal_fund_factor_alldate(beg_date, end_date)
-    self.opt_alldate(beg_date, end_date, turnover_control=True)
+    # self.cal_fund_factor_alldate(beg_date, end_date)
+    # self.opt_alldate(beg_date, end_date, turnover_control=True)
     # self.upload_all_wind_port()
     # self.backtest(bench_code)
+
+    # self.cal_fund_factor_date(end_date)
+    # self.opt_date(end_date, end_last_date, turnover_control=True)
+    # self.generate_wind_file(end_date)
+    WindPortUpLoad().upload_weight_date(port_name, end_date)
 
     # 2、主动股票型基金优选500AlphaIR
     fund_pool_name = "基金持仓基准基金池"
@@ -501,8 +507,8 @@ if __name__ == "__main__":
     alpha_len = 500
     alpha_column = "RegressAlphaIR"
     port_name = "主动股票型基金优选500AlphaIR"
-    beg_date = "20070401"
-    end_date = datetime.today().strftime("%Y%m%d")
+    beg_date = "20181201"
+    end_date = "20190404"
     bench_code = "885000.WI"
     style_deviate = 0.20
     position_deviate = 0.02
@@ -511,10 +517,15 @@ if __name__ == "__main__":
 
     self = NiceStockFund(fund_pool_name, benchmark_name, alpha_len, alpha_column, port_name,
                          style_deviate, position_deviate, fund_up_ratio, turnover)
-    self.cal_fund_factor_alldate(beg_date, end_date)
-    self.opt_alldate(beg_date, end_date, turnover_control=True)
+    # self.cal_fund_factor_alldate(beg_date, end_date)
+    # self.opt_alldate(beg_date, end_date, turnover_control=True)
     # self.upload_all_wind_port()
     # self.backtest(bench_code)
+
+    # self.cal_fund_factor_date(end_date)
+    # self.opt_date(end_date, end_last_date, turnover_control=True)
+    # self.generate_wind_file(end_date)
+    WindPortUpLoad().upload_weight_date(port_name, end_date)
 
     # 3、股票型基金优选500AlphaIR
     fund_pool_name = "指数+主动股票+灵活配置60基金"
@@ -522,8 +533,8 @@ if __name__ == "__main__":
     alpha_len = 500
     alpha_column = "RegressAlphaIR"
     port_name = "股票型基金优选500AlphaIR"
-    beg_date = "20070401"
-    end_date = datetime.today().strftime("%Y%m%d")
+    beg_date = "20181201"
+    end_date = "20190404"
     bench_code = "885000.WI"
     style_deviate = 0.20
     position_deviate = 0.02
@@ -532,10 +543,15 @@ if __name__ == "__main__":
 
     self = NiceStockFund(fund_pool_name, benchmark_name, alpha_len, alpha_column, port_name,
                          style_deviate, position_deviate, fund_up_ratio, turnover)
-    self.cal_fund_factor_alldate(beg_date, end_date)
-    self.opt_alldate(beg_date, end_date, turnover_control=True)
+    # self.cal_fund_factor_alldate(beg_date, end_date)
+    # self.opt_alldate(beg_date, end_date, turnover_control=True)
     # self.upload_all_wind_port()
     # self.backtest(bench_code)
+
+    # self.cal_fund_factor_date(end_date)
+    # self.opt_date(end_date, end_last_date, turnover_control=True)
+    # self.generate_wind_file(end_date)
+    WindPortUpLoad().upload_weight_date(port_name, end_date)
 
     # 4、股票型基金优选750AlphaIR
     fund_pool_name = "指数+主动股票+灵活配置60基金"
@@ -543,8 +559,8 @@ if __name__ == "__main__":
     alpha_len = 750
     alpha_column = "RegressAlphaIR"
     port_name = "股票型基金优选750AlphaIR"
-    beg_date = "20070401"
-    end_date = datetime.today().strftime("%Y%m%d")
+    beg_date = "20181201"
+    end_date = "20190404"
     bench_code = "885000.WI"
     style_deviate = 0.20
     position_deviate = 0.02
@@ -553,8 +569,12 @@ if __name__ == "__main__":
 
     self = NiceStockFund(fund_pool_name, benchmark_name, alpha_len, alpha_column, port_name,
                          style_deviate, position_deviate, fund_up_ratio, turnover)
-    self.cal_fund_factor_alldate(beg_date, end_date)
-    self.opt_alldate(beg_date, end_date, turnover_control=True)
+    # self.cal_fund_factor_alldate(beg_date, end_date)
+    # self.opt_alldate(beg_date, end_date, turnover_control=True)
     # self.upload_all_wind_port()
     # self.backtest(bench_code)
 
+    # self.cal_fund_factor_date(end_date)
+    # self.opt_date(end_date, end_last_date, turnover_control=True)
+    # self.generate_wind_file(end_date)
+    WindPortUpLoad().upload_weight_date(port_name, end_date)
