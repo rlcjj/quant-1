@@ -30,7 +30,7 @@ class AttributionFund(Data):
         """ 初始化 """
 
         Data.__init__(self)
-        self.sub_data_path = r'mfcteda_data\attribution_new'
+        self.sub_data_path = r'mfcteda_data\attribution'
         self.data_path = os.path.join(self.primary_data_path, self.sub_data_path)
 
         self.double_fee_ratio = 0.001 + 0.0008 * 2  # 印花税 + 交易佣金
@@ -830,7 +830,8 @@ class AttributionFund(Data):
         """ 更新归因需要的数据 """
 
         today = datetime.today().strftime("%Y%m%d")
-        beg_date = Date().get_trade_date_offset(today, -40)
+        today = Date().get_trade_date_offset(today, -1)
+        beg_date = Date().get_trade_date_offset(today, -25)
 
         Barra().load_barra_data()
         MfcData().cal_mfc_private_fund_nav_all()

@@ -6,7 +6,7 @@ from quant.project.multi_factor.alpha_model.exposure.alpha_factor import AlphaFa
 class AlphaAverageHolder(AlphaFactor):
 
     """
-    因子说明：- 户均持股比例 = 就是持股户数的倒数
+    因子说明：户均持股比例 = 就是持股户数的倒数
     """
 
     def __init__(self):

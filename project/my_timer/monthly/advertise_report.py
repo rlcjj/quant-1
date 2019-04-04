@@ -309,6 +309,7 @@ if __name__ == '__main__':
     self.generate_excel_inside(date)
     self.generate_word_inside(date)
     self.copyfile(date)
+    os.system("pause")
 
     # 每天自动更新
     # 每月 手动发送邮件给各部门的同事

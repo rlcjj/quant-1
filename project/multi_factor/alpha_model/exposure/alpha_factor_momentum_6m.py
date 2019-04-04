@@ -9,7 +9,7 @@ from quant.project.multi_factor.alpha_model.exposure.alpha_factor import AlphaFa
 class AlphaMomentum6m(AlphaFactor):
 
     """
-    因子说明：-1 * 最近1月加权收益率
+    因子说明：-1 * 最近6月加权收益率
     权重为线性加权
     """
 

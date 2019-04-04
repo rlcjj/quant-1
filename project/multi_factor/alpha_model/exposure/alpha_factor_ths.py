@@ -9,7 +9,7 @@ from quant.project.multi_factor.alpha_model.exposure.alpha_factor import AlphaFa
 class AlphaTHS(AlphaFactor):
 
     """
-    因子说明： 最近10天 同花顺点击数量 平均
+    因子说明： -最近10天 同花顺点击数量 平均
     """
 
     def __init__(self):

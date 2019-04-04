@@ -5,10 +5,7 @@ from quant.project.multi_factor.alpha_model.exposure.alpha_factor import AlphaFa
 class AlphaROETTM(AlphaFactor):
 
     """
-    因子说明：预收账款 / 净资产
-    财报期 最近可以得到的最新财报
-    若有一个为负值 结果为负值
-    表征了股票的对下游的议价能力
+    因子说明：ROE TTM
     """
 
     def __init__(self):

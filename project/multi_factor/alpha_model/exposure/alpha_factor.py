@@ -52,6 +52,16 @@ class AlphaFactor(Data):
         factor_name_list = list(map(lambda x: x[0:-3], file_list))
         return factor_name_list
 
+    def get_all_alpha_factor_file(self):
+
+        """ 得到所有Alpha的文件 """
+
+        file = os.path.join(self.data_path, r"factor\param\UseAlpha.xlsx")
+        data = pd.read_excel(file, index_col=[0])
+        data = data.dropna(subset=["因子名"])
+
+        return data
+
     def get_standard_alpha_factor(self, factor_name):
 
         """ 预处理Alpha因子 包括去极值、标准化 """

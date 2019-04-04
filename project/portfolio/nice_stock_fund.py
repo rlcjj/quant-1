@@ -73,30 +73,30 @@ class NiceStockFund(Data):
         if not os.path.exists(self.data_path):
             os.makedirs(self.data_path)
 
-    def update_data(self):
+    @staticmethod
+    def update_data():
 
         """ 更新所需要的数据 """
 
         end_date = datetime.today().strftime("%Y%m%d")
-        beg_date = Date().get_trade_date_offset(end_date, -120)
+        fund_pool_name = "指数+主动股票+灵活配置60基金"
 
-        print_str = "Project Nice Stock Fund Loading Index Data from %s To %s......"
-        print(print_str % (beg_date, end_date))
+        beg_date = Date().get_trade_date_offset(end_date, -20)
+        print("下载指数数据 %s To %s ......" % (beg_date, end_date))
         Index().load_index_factor_all(beg_date, end_date)
 
-        print_str = "Project Nice Stock Fund Calculating Fund Exposure from %s To %s......"
-        print(print_str % (beg_date, end_date))
+        beg_date = Date().get_trade_date_offset(end_date, -120)
+        print("计算所有股票型基在宽基指数上的暴露 %s To %s ......" % (beg_date, end_date))
         fund_exposure = FundExposure()
         fund_exposure.get_data()
         fund_exposure.cal_fund_regression_exposure_index_all(beg_date, end_date,
-                                                             fund_pool=self.fund_pool_name,
-                                                             file_rewrite=True)
+                                                             fund_pool=fund_pool_name, file_rewrite=True)
 
-        print_str = "Project Nice Stock Fund Calculating Fund Alpha from %s To %s......"
-        print(print_str % (beg_date, end_date))
+        beg_date = Date().get_trade_date_offset(end_date, -120)
+        print("计算所有股票型基回归掉宽基指数后的Alpha %s To %s ......" % (beg_date, end_date))
         fund_return = FundReturnDecomposition()
         fund_return.cal_fund_regression_risk_alpha_return_index_all(beg_date, end_date,
-                                                                    fund_pool=self.fund_pool_name)
+                                                                    fund_pool=fund_pool_name, file_rewrite=True)
 
     def get_fund_pool(self, end_date):
 
@@ -299,7 +299,7 @@ class NiceStockFund(Data):
         bench_position_low_values = bench_position_values.T - self.position_deviate
 
         if len(data) == 0:
-            print("Project Nice Stock Fund Length of Fund is %s at %s ......" % (len(data), end_date))
+            print("Project Nice Stock Fund Length of Fund is %s at %s ...... is Zero" % (len(data), end_date))
         else:
             print("Project Nice Stock Fund Length of Fund is %s at %s ......" % (len(data), end_date))
             w = cvx.Variable(len(data))
@@ -466,13 +466,17 @@ if __name__ == "__main__":
     5、中证500基金优选500AlphaIR
     """
 
+    # 更新基金Alpha
+    self = NiceStockFund()
+    self.update_data()
+
     # 1、主动股票型基金优选750AlphaIR
     fund_pool_name = "基金持仓基准基金池"
     benchmark_name = "基金持仓基准基金池"
     alpha_len = 750
     alpha_column = "RegressAlphaIR"
     port_name = "主动股票型基金优选750AlphaIR"
-    beg_date = "20070401"
+    beg_date = "20180401"
     end_date = datetime.today().strftime("%Y%m%d")
     bench_code = "885000.WI"
     style_deviate = 0.20
@@ -482,11 +486,10 @@ if __name__ == "__main__":
 
     self = NiceStockFund(fund_pool_name, benchmark_name, alpha_len, alpha_column, port_name,
                          style_deviate, position_deviate, fund_up_ratio, turnover)
-    self.update_data()
     self.cal_fund_factor_alldate(beg_date, end_date)
     self.opt_alldate(beg_date, end_date, turnover_control=True)
-    self.upload_all_wind_port()
-    self.backtest(bench_code)
+    # self.upload_all_wind_port()
+    # self.backtest(bench_code)
 
     # 2、主动股票型基金优选500AlphaIR
     fund_pool_name = "基金持仓基准基金池"
@@ -504,11 +507,10 @@ if __name__ == "__main__":
 
     self = NiceStockFund(fund_pool_name, benchmark_name, alpha_len, alpha_column, port_name,
                          style_deviate, position_deviate, fund_up_ratio, turnover)
-    self.update_data()
     self.cal_fund_factor_alldate(beg_date, end_date)
     self.opt_alldate(beg_date, end_date, turnover_control=True)
-    self.upload_all_wind_port()
-    self.backtest(bench_code)
+    # self.upload_all_wind_port()
+    # self.backtest(bench_code)
 
     # 3、股票型基金优选500AlphaIR
     fund_pool_name = "指数+主动股票+灵活配置60基金"
@@ -526,11 +528,10 @@ if __name__ == "__main__":
 
     self = NiceStockFund(fund_pool_name, benchmark_name, alpha_len, alpha_column, port_name,
                          style_deviate, position_deviate, fund_up_ratio, turnover)
-    self.update_data()
     self.cal_fund_factor_alldate(beg_date, end_date)
     self.opt_alldate(beg_date, end_date, turnover_control=True)
-    self.upload_all_wind_port()
-    self.backtest(bench_code)
+    # self.upload_all_wind_port()
+    # self.backtest(bench_code)
 
     # 4、股票型基金优选750AlphaIR
     fund_pool_name = "指数+主动股票+灵活配置60基金"
@@ -548,10 +549,8 @@ if __name__ == "__main__":
 
     self = NiceStockFund(fund_pool_name, benchmark_name, alpha_len, alpha_column, port_name,
                          style_deviate, position_deviate, fund_up_ratio, turnover)
-    self.update_data()
     self.cal_fund_factor_alldate(beg_date, end_date)
     self.opt_alldate(beg_date, end_date, turnover_control=True)
-    self.upload_all_wind_port()
-    self.backtest(bench_code)
-
+    # self.upload_all_wind_port()
+    # self.backtest(bench_code)
 

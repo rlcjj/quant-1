@@ -119,7 +119,7 @@ class CalIPOBuy(Data):
                     try:
                         stock_code = CodeFormat().change_normal_to_ipo_apply_code(data.iloc[2, 9])[0:6]
                         stock_price = data.iloc[2, 11]
-
+                        print("之前问询过网下，现在网上新股")
                         """ 当日拿不出来当日申购上限数据 就用Excel中的数据 """
                         stock_code_normal = CodeFormat().change_ipo_apply_code_to_normal(data.iloc[2, 9])[0:6]
                         stock_code_normal = CodeFormat().stock_code_add_postfix(stock_code_normal)
@@ -150,10 +150,11 @@ class CalIPOBuy(Data):
                         print(e)
                         stock_code = CodeFormat().change_normal_to_ipo_apply_code(data.iloc[4, 0])[0:6]
                         stock_price = data.iloc[4, 6]
+                        print("只有网上新股")
 
                         """ 当日拿不出来当日申购上限数据 就用Excel中的数据 """
 
-                        stock_code_normal = CodeFormat().change_ipo_apply_code_to_normal(data.iloc[2, 9])[0:6]
+                        stock_code_normal = CodeFormat().change_ipo_apply_code_to_normal(data.iloc[4, 0])[0:6]
                         stock_code_normal = CodeFormat().stock_code_add_postfix(stock_code_normal)
                         num = w.wss(stock_code_normal, "ipo_SShares_uplimit", "unit=1")
                         stock_number_up = num.Data[0][0]
@@ -346,3 +347,5 @@ if __name__ == '__main__':
     self.load_param_file(today)
     self.ipo_buy_online(today)
     self.ipo_buy_outline(today)
+
+    os.system("pause")

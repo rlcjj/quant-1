@@ -1,5 +1,6 @@
 import os
 import pandas as pd
+
 from quant.data.data import Data
 from quant.stock.date import Date
 from quant.fund.fund_factor import FundFactor

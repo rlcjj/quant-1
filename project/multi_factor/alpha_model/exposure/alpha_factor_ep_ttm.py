@@ -8,7 +8,7 @@ from quant.project.multi_factor.alpha_model.exposure.alpha_factor import AlphaFa
 class AlphaEPTTM(AlphaFactor):
 
     """
-    因子说明: 最近季度净利润/总市值, 根据最新财报更新数据
+    因子说明: 净利润TTM/总市值 根据最新财报更新数据
     披露日期 为 最近财报
     表明因子估值能力
     """

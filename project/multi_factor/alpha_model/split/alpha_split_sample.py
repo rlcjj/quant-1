@@ -7,6 +7,7 @@ from quant.data.data import Data
 from quant.stock.date import Date
 from quant.stock.stock import Stock
 from quant.stock.barra import Barra
+from quant.utility.factor_preprocess import FactorPreProcess
 from quant.project.multi_factor.alpha_model.exposure.alpha_factor import AlphaFactor
 
 
@@ -24,41 +25,83 @@ class AlphaSplitSample(Data):
         Data.__init__(self)
         self.sub_path = r'stock_data\alpha_model\split'
         self.data_path = os.path.join(self.primary_data_path, self.sub_path)
-        self.hdf_res_path = os.path.join(self.data_path, "res_alpha\hdf")
-        self.csv_res_path = os.path.join(self.data_path, "res_alpha\csv")
-        self.hdf_risk_path = os.path.join(self.data_path, "exposure_risk\hdf")
-        self.csv_risk_path = os.path.join(self.data_path, "exposure_risk\csv")
         self.min_stock_number = 0
 
-    def get_alpha_res_exposure(self, factor_name):
+    def get_all_alpha_factor_name(self, stock_pool_name):
+
+        """ 得到所有Alpha的名字 """
+
+        hdf_res_path = os.path.join(self.data_path, stock_pool_name, "res_alpha\hdf")
+        file_list = os.listdir(hdf_res_path)
+        factor_name_list = list(map(lambda x: x[0:-3], file_list))
+        return factor_name_list
+
+    def get_alpha_res_exposure(self, factor_name, stock_pool_name):
 
         """ 得到残差Alpha的暴露 """
 
-        data = Stock().read_factor_h5(factor_name, self.hdf_res_path)
+        hdf_res_path = os.path.join(self.data_path, stock_pool_name, "res_alpha\hdf")
+        data = Stock().read_factor_h5(factor_name, hdf_res_path)
         return data
 
-    def get_alpha_risk_exposure(self, factor_name):
+    def get_alpha_risk_exposure(self, factor_name, stock_pool_name):
 
         """ 得到Alpha在风险因子上的暴露 """
 
-        data = Stock().read_factor_h5(factor_name, self.hdf_risk_path)
+        hdf_risk_path = os.path.join(self.data_path, stock_pool_name, "exposure_risk\hdf")
+        data = Stock().read_factor_h5(factor_name, hdf_risk_path)
         return data
 
-    def save_alpha_res_exposure(self, data, factor_name):
+    def save_alpha_res_exposure(self, data, factor_name, stock_pool_name):
 
         """ 残差Alpha的暴露 存储成为 CSV 和 HDF 两份 """
 
-        Stock().write_factor_h5(data, factor_name, self.hdf_res_path)
-        data = self.get_alpha_res_exposure(factor_name)
-        data.to_csv(os.path.join(self.csv_res_path, '%s.csv' % factor_name))
+        hdf_res_path = os.path.join(self.data_path, stock_pool_name, "res_alpha\hdf")
+        csv_res_path = os.path.join(self.data_path, stock_pool_name, "res_alpha\csv")
 
-    def save_alpha_risk_exposure(self, data, factor_name):
+        if not os.path.exists(hdf_res_path):
+            os.makedirs(hdf_res_path)
+        if not os.path.exists(csv_res_path):
+            os.makedirs(csv_res_path)
+
+        Stock().write_factor_h5(data, factor_name, hdf_res_path)
+        data = self.get_alpha_res_exposure(factor_name, stock_pool_name)
+        data.to_csv(os.path.join(csv_res_path, '%s.csv' % factor_name))
+
+    def save_alpha_risk_exposure(self, data, factor_name, stock_pool_name):
 
         """ Alpha在风险因子上的暴露 存储成为 CSV 和 HDF 两份 """
 
-        Stock().write_factor_h5(data, factor_name, self.hdf_risk_path)
-        data = self.get_alpha_risk_exposure(factor_name)
-        data.to_csv(os.path.join(self.csv_risk_path, '%s.csv' % factor_name))
+        hdf_risk_path = os.path.join(self.data_path, stock_pool_name, "exposure_risk\hdf")
+        csv_risk_path = os.path.join(self.data_path, stock_pool_name, "exposure_risk\csv")
+        if not os.path.exists(hdf_risk_path):
+            os.makedirs(hdf_risk_path)
+        if not os.path.exists(csv_risk_path):
+            os.makedirs(csv_risk_path)
+        Stock().write_factor_h5(data, factor_name, hdf_risk_path)
+        data = self.get_alpha_risk_exposure(factor_name, stock_pool_name)
+        data.to_csv(os.path.join(csv_risk_path, '%s.csv' % factor_name))
+
+    def get_alpha_res_corr(self, factor_name, beg_date, end_date, period="W", stock_pool_name="AllChinaStockFilter"):
+
+        """ 计算残差暴露前后两期平均相关性 """
+
+        alpha_res = self.get_alpha_res_exposure(factor_name, stock_pool_name)
+        date_series = Date().get_trade_date_series(beg_date, end_date, period)
+        date_series = list(set(date_series) & set(alpha_res.columns))
+        date_series.sort()
+        data = alpha_res.loc[:, date_series]
+
+        corr = pd.DataFrame([], index=date_series, columns=['Corr'])
+
+        for i in range(len(data.columns)-1):
+            date = data.columns[i]
+            date_next = data.columns[i + 1]
+            data_date = pd.concat([data[date], data[date_next]], axis=1)
+            data_date = data_date.dropna()
+            corr.loc[date, "Corr"] = data_date.corr().iloc[0, 1]
+        corr_mean = corr.mean().values[0]
+        return corr_mean
 
     def split_alpha(self, beg_date, end_date, factor_name, period="W", stock_pool_name="AllChinaStockFilter"):
 
@@ -115,29 +158,31 @@ class AlphaSplitSample(Data):
             else:
                 print("Split %s Alpha Exposure At %s %s is Null" % (factor_name, date, stock_pool_name))
 
-        self.save_alpha_risk_exposure(exposure_risk, factor_name)
-        self.save_alpha_res_exposure(res_alpha, factor_name)
+        res_alpha = FactorPreProcess().remove_extreme_value_mad(res_alpha)
+        res_alpha = FactorPreProcess().standardization(res_alpha)
+        self.save_alpha_risk_exposure(exposure_risk, factor_name, stock_pool_name)
+        self.save_alpha_res_exposure(res_alpha, factor_name, stock_pool_name)
 
     def split_alpha_all(self, beg_date, end_date, period="W", stock_pool_name="AllChinaStockFilter"):
 
         """ 拆分所有Alpha """
 
         alpha_factor_list = AlphaFactor().get_all_alpha_factor_name()
-
-        for alpha_name in alpha_factor_list:
-
+        for i in range(0, len(alpha_factor_list)):
+            alpha_name = alpha_factor_list[i]
+            print(i, alpha_name)
             self.split_alpha(beg_date, end_date, alpha_name, period, stock_pool_name)
 
 
 if __name__ == "__main__":
 
-    from datetime import datetime
-
     self = AlphaSplitSample()
-    beg_date, end_date, period = "20040101", datetime.today().strftime("%Y%m%d"), "W"
+    beg_date, end_date, period = "20040101", "20190329", "W"
     stock_pool_name = "AllChinaStockFilter"
-
-    # factor_name = "alpha_raw_ep"
+    factor_name = "alpha_raw_ep"
     # self.split_alpha(beg_date, end_date, factor_name, period, stock_pool_name)
-
-    self.split_alpha_all(beg_date, end_date, period, stock_pool_name)
+    # print(self.get_alpha_res_corr(factor_name, beg_date, end_date, period, stock_pool_name))
+    # print(self.get_alpha_risk_exposure(factor_name, stock_pool_name))
+    # self.split_alpha_all(beg_date, end_date, period, "AllChinaStockFilter")
+    # self.split_alpha_all(beg_date, end_date, period, "hs300")
+    self.split_alpha_all(beg_date, end_date, period, "zz500")

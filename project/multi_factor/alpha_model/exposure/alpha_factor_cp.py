@@ -6,7 +6,7 @@ from quant.project.multi_factor.alpha_model.exposure.alpha_factor import AlphaFa
 class AlphaCP(AlphaFactor):
 
     """
-    因子说明: -货币资金/总市值, 根据最新财报更新数据
+    因子说明: 货币资金/总市值, 根据最新财报更新数据
     披露日期 为 最近财报
     表明因子估值能力
     """
@@ -30,7 +30,7 @@ class AlphaCP(AlphaFactor):
         # data precessing
         cash = Stock().change_quarter_to_daily_with_disclosure_date(cash, report_data, beg_date, end_date)
         [total_share, price_unadjust] = FactorPreProcess().make_same_index_columns([total_share, price_unadjust])
-        total_mv = total_share.mul(price_unadjust) / 100000000
+        total_mv = total_share.mul(price_unadjust)
         [cash, total_mv] = Stock().make_same_index_columns([cash, total_mv])
         cp = 4 * cash.div(total_mv)
 

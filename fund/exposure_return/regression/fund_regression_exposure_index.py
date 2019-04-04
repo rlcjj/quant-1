@@ -116,7 +116,7 @@ class FundRegressionExposureIndex(Data):
             data_end_date = Date().get_trade_date_offset(period_end_date, -0)
 
             period_date_series = Date().get_trade_date_series(period_beg_date, data_end_date)
-            data_periods = data.ix[period_date_series, :]
+            data_periods = data.loc[period_date_series, :]
             data_periods = data_periods.dropna(subset=[reg_code])
             data_periods = data_periods.T.dropna(how='all').T
             data_periods = data_periods.T.fillna(data_periods.mean(axis=1)).T
@@ -127,8 +127,8 @@ class FundRegressionExposureIndex(Data):
 
             if len(data_periods) > self.regression_period_min and (len(data_periods.columns) > 1):
 
-                y = data_periods.ix[:, 0].values
-                x = data_periods.ix[:, 1:].values
+                y = data_periods.iloc[:, 0].values
+                x = data_periods.iloc[:, 1:].values
                 n = x.shape[1]
 
                 if params_old.empty or params_old.sum().sum() < 0.5:
@@ -290,7 +290,8 @@ if __name__ == "__main__":
     beg_date = "20180901"
     end_date = datetime.today().strftime("%Y%m%d")
     period = "D"
+    reg_code = "000001.OF"
     self = FundRegressionExposureIndex()
     self.get_data()
-    self.cal_fund_regression_exposure_index_all(beg_date, end_date, period=period, file_rewrite=True)
+    # self.cal_fund_regression_exposure_index_all(beg_date, end_date, period=period, file_rewrite=True)
     # print(self.get_fund_regression_exposure_index("000001.OF"))
