@@ -81,8 +81,10 @@ class MfcAlphaExposure(Data):
                     concat_data = pd.concat([weight, alpha], axis=1)
                     concat_data = concat_data.dropna()
                     concat_data['WeightAlpha'] = concat_data['Weight'] * concat_data[alpha_name_ch]
-                    weight_alpha = concat_data['WeightAlpha'].sum() / concat_data['Weight'].sum()
-                    result.loc[fund_code, alpha_name_ch] = weight_alpha
+                    if len(concat_data) > 0:
+                        weight_alpha = concat_data['WeightAlpha'].sum() / concat_data['Weight'].sum()
+                        result.loc[fund_code, alpha_name_ch] = weight_alpha
+
                     print(fund_name, fund_code, alpha_name_ch, alpha_name_en)
                 else:
                     print(fund_name, fund_code, alpha_name_ch, alpha_name_en, "is Null")
@@ -130,5 +132,5 @@ if __name__ == '__main__':
 
     self = MfcAlphaExposure()
     # self.update_data(beg_date, end_date)
-    self.fund_alpha_exposure_all("20180101", "20190401")
+    self.fund_alpha_exposure_all("20181101", "20190401")
 

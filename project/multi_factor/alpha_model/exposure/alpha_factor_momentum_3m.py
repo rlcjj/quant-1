@@ -49,8 +49,8 @@ class AlphaMomentum3m(AlphaFactor):
 
                 print('Calculating factor %s at date %s' % (self.raw_factor_name, current_date))
                 momentum = ((data_period + 1.0).cumprod() - 1.0).loc[current_date, :]
-                vaild = data_period.count() > effective_term
-                momentum[vaild] = np.nan
+                vaild = data_period.count() >= effective_term
+                momentum[~vaild] = np.nan
                 momentum = - pd.DataFrame(momentum)
                 momentum.columns = [current_date]
                 res = pd.concat([res, momentum], axis=1)
