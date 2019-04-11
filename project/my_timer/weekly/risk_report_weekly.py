@@ -10,7 +10,7 @@ def risk_report_weekly():
     receivers_mail_name = ['yaoxin.liu@mfcteda.com', 'fucheng.dou@mfcteda.com']  # 接收邮箱 list
     acc_mail_name = ['jie.dai@mfcteda.com', 'jing.yuan@mfcteda.com', 'ping.zhong@mfcteda.com']  # 抄送邮箱 list
 
-    subject_header = "金融工程风险周报(2019年3月25日-3月29日)"  # 邮件标题
+    subject_header = "金融工程风险周报(2019年4月1日-4月4日)"  # 邮件标题
     body_text = '瑶歆：<br>你好! 上周金融工程无风险， 供知晓， 谢谢!<br>' \
                 '祝好<br><br>窦福成<br>泰达宏利基金管理有限公司<br>金融工程部'
 

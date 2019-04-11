@@ -312,6 +312,8 @@ class FamaFrench(Data):
         """ 五因素模型 市场 市值 估值 盈利 资产增长率 """
 
         term = 60
+        beg_date = Date().change_to_str(beg_date)
+        end_date = Date().change_to_str(end_date)
         stock_excess_pct = self.get_stock_excess_pct()
         index_excess_pct = self.get_factor_pct("Market")
         smb_factor_pct = self.get_factor_pct("SMB")

@@ -119,12 +119,12 @@ class StockInvestPool(Data):
             os.makedirs(sub_path)
 
         filter_stock = IndexWeight().get_weight(index_code)
+        filter_stock.columns = filter_stock.columns.map(str)
 
         for i_date in range(len(date_series)):
 
             date = date_series[i_date]
             file = os.path.join(sub_path, "%s_%s.csv" % (stock_pool_name, date))
-            print("Generate %s Stock Invest Pool %s" % (stock_pool_name, date))
             last_date_list = filter_stock.columns[filter_stock.columns <= date]
 
             if len(last_date_list) != 0:
@@ -132,10 +132,11 @@ class StockInvestPool(Data):
             else:
                 last_date = filter_stock.columns[0]
 
-            filter_stock = pd.DataFrame(filter_stock[last_date])
-            filter_stock = filter_stock.dropna()
+            print("Generate %s Stock Invest Pool %s" % (stock_pool_name, last_date))
+            stock_date = pd.DataFrame(filter_stock[last_date])
+            stock_date = stock_date.dropna()
 
-            filter_stock_pd = pd.DataFrame([], index=filter_stock.index, columns=["成分股"])
+            filter_stock_pd = pd.DataFrame([], index=stock_date.index, columns=["成分股"])
             filter_stock_pd.to_csv(file)
 
     def generate_zz500_stock_pool(self,
@@ -154,23 +155,25 @@ class StockInvestPool(Data):
             os.makedirs(sub_path)
 
         filter_stock = IndexWeight().get_weight(index_code)
+        filter_stock.columns = filter_stock.columns.map(str)
 
         for i_date in range(len(date_series)):
 
             date = date_series[i_date]
             file = os.path.join(sub_path, "%s_%s.csv" % (stock_pool_name, date))
-            print("Generate %s Stock Invest Pool %s" % (stock_pool_name, date))
+
             last_date_list = filter_stock.columns[filter_stock.columns <= date]
 
             if len(last_date_list) != 0:
                 last_date = last_date_list[-1]
             else:
                 last_date = filter_stock.columns[0]
+            print("Generate %s Stock Invest Pool %s" % (stock_pool_name, last_date))
 
-            filter_stock = pd.DataFrame(filter_stock[last_date])
-            filter_stock = filter_stock.dropna()
+            stock_date = pd.DataFrame(filter_stock[last_date])
+            stock_date = stock_date.dropna()
 
-            filter_stock_pd = pd.DataFrame([], index=filter_stock.index, columns=["成分股"])
+            filter_stock_pd = pd.DataFrame([], index=stock_date.index, columns=["成分股"])
             filter_stock_pd.to_csv(file)
 
     def get_invest_stock_pool(self,

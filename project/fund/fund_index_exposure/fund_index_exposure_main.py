@@ -20,7 +20,7 @@ if __name__ == "__main__":
     today = datetime.today().strftime("%Y%m%d")
     last_date = Date().get_trade_date_offset(today, -1)
     report_date_halfyear = Date().get_last_fund_halfyear_date(today)
-    print(report_date_halfyear)
+    print(last_date, report_date_halfyear)
 
     # 下载需要的Barra数据
     Barra().load_barra_data()

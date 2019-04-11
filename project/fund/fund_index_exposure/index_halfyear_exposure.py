@@ -6,7 +6,7 @@ import os
 import pandas as pd
 
 
-def Cal_AllIndex_HalfYear_Holding_Exposure(path, report_date,):
+def Cal_AllIndex_HalfYear_Holding_Exposure(path, report_date):
 
     """
     计算重点指数最近一个半年报 的持仓风格暴露

@@ -71,6 +71,7 @@ class AlphaFactorUpdate(Data):
         from quant.project.multi_factor.alpha_model.exposure.alpha_factor_ths import AlphaTHS
         from quant.project.multi_factor.alpha_model.exposure.alpha_factor_to_bias import AlphaTOBias
         from quant.project.multi_factor.alpha_model.exposure.alpha_factor_to_bias_6m import AlphaTOBias6m
+        from quant.project.multi_factor.alpha_model.exposure.alpha_factor_ff3_vol import AlphaFF3Vol
 
         AlphaDailyTsRank9().cal_factor_exposure(beg_date, end_date)
         AlphaAmountIR().cal_factor_exposure(beg_date, end_date)
@@ -115,6 +116,7 @@ class AlphaFactorUpdate(Data):
         AlphaTHS().cal_factor_exposure(beg_date, end_date)
         AlphaTOBias().cal_factor_exposure(beg_date, end_date)
         AlphaTOBias6m().cal_factor_exposure(beg_date, end_date)
+        # AlphaFF3Vol().cal_factor_exposure(beg_date, end_date)
 
     def check_alpha_factor_update_date(self):
 
@@ -136,6 +138,7 @@ class AlphaFactorUpdate(Data):
                 result.loc[factor_name, "最后一天股票个数"] = len(factor.iloc[:, -1])
                 result.loc[factor_name, "最后一天有效数据比率"] = factor.iloc[:, -1].count() / len(factor.iloc[:, -1])
             except Exception as e:
+                print(e)
                 result.loc[factor_name, '开始日期'] = ""
                 result.loc[factor_name, '结束日期'] = ""
                 result.loc[factor_name, "最后一天有效数据个数"] = ""

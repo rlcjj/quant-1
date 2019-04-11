@@ -249,12 +249,14 @@ if __name__ == "__main__":
 
     """ Load Index Weight """
 
-    self.load_weight_from_ftp_date("000905.SH", date)
+    # self.load_weight_from_ftp_date("000905.SH", date)
     # self.load_weight_from_wind_date("000016.SH", date)
     # self.load_weight_china_index_date(date)
     #
     # self.load_weight_period("000905.SH", "20181216", date)
-    # self.load_weight_period("China_Index_Benchmark", "20170731", "20181101")
+    self.load_weight_period("000852.SH", "20181227", "20190104")
+    self.load_weight_period("399101.SZ", "20181227", "20190104")
+    self.load_weight_period("399102.SZ", "20181227", "20190104")
 
     # self.load_weight_from_network()
 

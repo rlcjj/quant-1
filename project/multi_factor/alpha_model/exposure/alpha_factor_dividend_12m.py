@@ -21,7 +21,7 @@ class AlphaDividend12m(AlphaFactor):
 
         """ 计算因子暴露 """
 
-        dividend_12m = Stock().read_factor_h5("dividendyield2")
+        dividend_12m = Stock().read_factor_h5("dividendyield2") / 100
         beg_date = Date().change_to_str(beg_date)
         end_date = Date().change_to_str(end_date)
         dividend_12m = dividend_12m.loc[:, beg_date:end_date]

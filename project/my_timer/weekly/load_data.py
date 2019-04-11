@@ -33,12 +33,12 @@ def load_data():
 
     # 更新Index(因为IndexWeight每天更新，这里不用更新)
     # 需要wind流量
-    beg_date = Date().get_trade_date_offset(today, -8)
+    beg_date = Date().get_trade_date_offset(today, -5)
     Index().load_index_factor_all(beg_date, today)
 
     # Stock静态数据，例如股票池、成立日期等等
     # 需要wind流量
-    beg_date = Date().get_trade_date_offset(today, -6)
+    beg_date = Date().get_trade_date_offset(today, -5)
     Stock().load_stock_static_data_all(beg_date, today)
 
     os.system("pause")

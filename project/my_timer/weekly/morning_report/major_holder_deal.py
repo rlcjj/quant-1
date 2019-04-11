@@ -26,7 +26,7 @@ class MajorHolderDeal(Data):
 
         Date().load_trade_date_series("D")
         end_date = datetime.today().strftime("%Y%m%d")
-        beg_date = Date().get_trade_date_offset(end_date, -25)
+        beg_date = Date().get_trade_date_offset(end_date, -12)
         Stock().load_major_holder_deal(beg_date, end_date)
 
     def major_holder_deal_period_sum(self, beg_date, end_date):
@@ -229,8 +229,8 @@ class MajorHolderDeal(Data):
 
 if __name__ == '__main__':
 
-    end_date = "20190321"
+    end_date = "20190404"
     self = MajorHolderDeal()
-    # self.update_data()
+    self.update_data()
     self.generate_excel(end_date)
     # self.generate_excel_history(end_date)

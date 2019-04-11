@@ -36,7 +36,7 @@ def Cal_MfcFund_LastDate_Holding_Exposure(path, report_date, today):
             fund_name = fund_code
         else:
             fund_name = MfcData().get_mfc_fund_name(fund_code)
-        MfcData().cal_mfc_holding_barra_exposure_perieds(fund_name, beg_date, end_date)
+        MfcData().cal_mfc_holding_barra_exposure_period(fund_name, beg_date, end_date)
 
         if i_fund == 0:
             exposure = MfcData().get_mfc_holding_barra_exposure_date(fund_name, date)

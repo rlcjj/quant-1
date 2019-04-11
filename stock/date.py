@@ -124,7 +124,7 @@ class Date(Data):
             print(" The Input Date is Bigger Than Current Date.")
             return data_end_date
 
-        data = all_date.ix[:end_date, :]
+        data = all_date.loc[:end_date, :]
         last_trade_date = data.index[-1]
         last_trade_date_index = list(data.index).index(last_trade_date)
         offset_trade_date_index = last_trade_date_index + offset_num

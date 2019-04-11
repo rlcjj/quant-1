@@ -1,18 +1,16 @@
 import os
+import pandas as pd
 from datetime import datetime
 
-import pandas as pd
-from project.multi_factor.alpha_model.sample import FactorReturnSample
 from quant.data.data import Data
-from quant.fund.fund_factor import FundFactor
-from quant.fund.fund_pool import FundPool
-from quant.source.backtest import BackTest
-from quant.source.wind_portfolio import WindPortUpLoad
-from quant.stock.barra import Barra
 from quant.stock.date import Date
 from quant.stock.index import Index
 from quant.stock.stock import Stock
-from quant.utility.code_format import CodeFormat
+from quant.stock.barra import Barra
+
+from quant.source.backtest import BackTest
+from quant.source.wind_portfolio import WindPortUpLoad
+from project.multi_factor.alpha_model.sample.alpha_split import AlphaSplit
 
 
 class OptWeight(Data):
@@ -27,7 +25,6 @@ class OptWeight(Data):
         Data.__init__(self)
 
         self.port_name = ""
-        self.weight_name = ""
         self.benchmark_code = ""
         self.stock_pool_name = ""
 
@@ -39,7 +36,6 @@ class OptWeight(Data):
         self.style_columns = []
         self.weight_sum = 0.95
         self.track_error = 0.05
-        self.weight_type = 'fixed'
 
         self.free_mv = None
         self.trading_status = None
@@ -53,40 +49,21 @@ class OptWeight(Data):
 
         end_date = datetime.today()
         beg_date = Date().get_trade_date_offset(end_date, -10)
-        Index().cal_index_exposure(self.weight_name, beg_date, end_date)
+        Index().cal_index_exposure(self.benchmark_code, beg_date, end_date)
         Barra().cal_stock_covariance_period(beg_date, end_date)
 
-    def get_stock_sum_date(self, date):
-
-        """ 总股票权重 """
-
-        if self.weight_type == 'ptgp_fund':
-            quarter_date = Date().get_last_fund_quarter_date(date)
-            stock_ratio = FundFactor().get_fund_factor('Stock_Ratio').T
-            fund_pool = FundPool().get_fund_pool_code(name="普通股票型基金", date=quarter_date)
-            weight_stock = stock_ratio.loc[fund_pool, quarter_date].median() / 100.0
-        else:
-            weight_stock = self.weight_sum
-
-        return weight_stock
-
-    def get_alpha_factor(self, alpha_name, alpha_type):
+    def get_alpha_factor(self, alpha_name):
 
         """ 得到alpha """
 
-        if alpha_type == "my_alpha":
-            self.alpha_data = Stock().read_factor_h5(alpha_name, Stock().get_h5_path("my_alpha"))
-        elif alpha_type == 'my_res_sample_alpha':
-            self.alpha_data = FactorReturnSample(alpha_name).get_alpha_res()
-
-        if len(self.alpha_data.index[0]) <= 6:
-            self.alpha_data.index = self.alpha_data.index.map(CodeFormat.stock_code_add_postfix)
+        data = AlphaSplit().get_alpha_res_exposure(alpha_name, self.stock_pool_name)
+        return data
 
     def get_benchmark_weight_date(self, date):
 
         """ 得到 股票基准权重 """
 
-        benchmark_weight = Index().get_weight_date(index_code=self.weight_name, date=date)
+        benchmark_weight = Index().get_weight_date(index_code=self.benchmark_code, date=date)
         benchmark_weight.columns = ['BenchWeight']
         return benchmark_weight
 
@@ -112,8 +89,9 @@ class OptWeight(Data):
 
         last_date = Date().get_trade_date_offset(date, -1)
         invest_stock = self.get_invest_stock_pool_date(last_date)
-        none_suspension_stock = self.get_none_suspension_stock_date(date)
-        can_trade_stock = list(set(invest_stock) & set(none_suspension_stock))
+        # none_suspension_stock = self.get_none_suspension_stock_date(date)
+        # can_trade_stock = list(set(invest_stock) & set(none_suspension_stock))
+        can_trade_stock = list(set(invest_stock))
         can_trade_stock.sort()
         print("Stock Can Trade Number is ", len(can_trade_stock))
         return can_trade_stock
@@ -138,14 +116,14 @@ class OptWeight(Data):
         """ 得到 基准 risk exposure_return """
 
         type_list = ['COUNTRY', 'STYLE', 'INDUSTRY']
-        exposure = Index().get_index_exposure_date(self.weight_name, date, type_list)
+        exposure = Index().get_index_exposure_date(self.benchmark_code, date, type_list)
         return exposure
 
     def get_stock_covariance_date(self, date):
 
         """ 得到 股票协方差矩阵 """
 
-        Barra().cal_stock_covariance(date)
+        # Barra().cal_stock_covariance(date)
         stock_cov = Barra().get_stock_covariance(date)
         return stock_cov
 
@@ -197,9 +175,28 @@ class OptWeight(Data):
 
             weight /= weight.sum()
         except Exception as e:
+            print(e)
             stock = self.get_can_trade_stock_date(date)
             weight = pd.DataFrame([], columns=['Weight'], index=stock)
             weight = weight.fillna(0.0)
+
+        return weight
+
+    def get_stock_weight(self, date):
+
+        """ 得到本期股票权重 """
+
+        sub_path = os.path.join(self.wind_port_path, self.port_name)
+        print("Get Last Weight At Date %s" % date)
+
+        file = os.path.join(sub_path, '%s_%s.csv' % (self.port_name, date))
+        weight = pd.read_csv(file, index_col=[0], encoding='gbk')
+        weight = pd.DataFrame(weight['Weight'])
+
+        if "Cash" in weight.index:
+            weight = weight.drop(["Cash"], axis=0)
+
+        weight /= weight.sum()
 
         return weight
 
@@ -218,9 +215,8 @@ class OptWeight(Data):
         weight["Date"] = next_date
         weight["Price"] = 0.0
         weight["Direction"] = "Long"
-        weight_sum = self.get_stock_sum_date(date)
-        weight['Weight'] *= weight_sum
-        weight.loc['Cash', 'Weight'] = 1 - weight_sum
+        weight['Weight'] *= self.weight_sum
+        weight.loc['Cash', 'Weight'] = 1 - self.weight_sum
 
         sub_path = os.path.join(self.wind_port_path, self.port_name)
         if not os.path.exists(sub_path):
@@ -244,5 +240,4 @@ class OptWeight(Data):
 
 if __name__ == '__main__':
 
-    # 因子
     self = OptWeight()

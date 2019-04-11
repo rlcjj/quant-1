@@ -141,6 +141,15 @@ class Barra(Data):
 
         return barra_factor_return
 
+    def get_exposure_date_series(self):
+
+        """ 得到Barra因子值暴露 日期序列 """
+        path = os.path.join(self.data_path, 'BarraExposure')
+
+        file_list = os.listdir(path)
+        date_list = list(map(lambda x: x[0:-4], file_list))
+        return date_list
+
     def get_factor_exposure_date(self, date, type_list=["STYLE"]):
 
         """ 得到 barra 因子暴露值 """
@@ -306,11 +315,11 @@ class Barra(Data):
         else:
             print("Exposure is None %s" % date)
 
-    def cal_stock_covariance_period(self, beg_date, end_date):
+    def cal_stock_covariance_period(self, beg_date, end_date, period):
 
         """  计算 股票 一段时间内 股票协方差矩阵 """
 
-        date_series = Date().get_trade_date_series(beg_date, end_date)
+        date_series = Date().get_trade_date_series(beg_date, end_date, period)
         for date in date_series:
             self.cal_stock_covariance(date)
 
@@ -339,13 +348,13 @@ if __name__ == '__main__':
     ################################################################################################
     today = datetime.today().strftime("%Y%m%d")
     beg_date = Date().get_trade_date_offset(today, -40)
-    Date().load_trade_date_series()
+    # Date().load_trade_date_series()
     self = Barra()
 
-    Barra().load_barra_data()
+    # self.load_barra_data()
     # Barra().cal_barra_cum_factor_return("20040101", today)
     # Barra().cal_stock_riskfactor_return_daily(beg_date, today)
-    Barra().cal_stock_covariance_period("20120518", today)
+    Barra().cal_stock_covariance_period("20190101", today, "D")
     ################################################################################################
 
     """ 读取Barra数据 """

@@ -46,9 +46,9 @@ class AlphaFactor(Data):
 
         """ 得到所有Alpha的名字 """
 
-        path = self.exposure_hdf_path
-        file_list = os.listdir(path)
-        factor_name_list = list(map(lambda x: x[0:-3], file_list))
+        data = self.get_all_alpha_factor_file()
+        factor_name_list = list(data['因子名'].values)
+        factor_name_list.sort()
         return factor_name_list
 
     def get_all_alpha_factor_file(self):
@@ -67,6 +67,7 @@ class AlphaFactor(Data):
         
         factor_list = self.get_all_alpha_factor_file()
         major_factor_list = list(set(factor_list.index))
+        major_factor_list.sort()
         return major_factor_list
 
     def get_standard_alpha_factor(self, factor_name):

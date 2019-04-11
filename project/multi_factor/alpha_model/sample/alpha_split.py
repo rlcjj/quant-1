@@ -107,7 +107,8 @@ class AlphaSplit(Data):
 
         alpha = AlphaFactor().get_standard_alpha_factor(factor_name)
         date_series = Date().get_trade_date_series(beg_date, end_date, period=period)
-        date_series = list(set(date_series) & set(alpha.columns))
+        barra_date_series = Barra().get_exposure_date_series()
+        date_series = list(set(date_series) & set(alpha.columns) & set(barra_date_series))
         date_series.sort()
 
         res_alpha = pd.DataFrame()
@@ -168,23 +169,28 @@ class AlphaSplit(Data):
         alpha_factor_list = AlphaFactor().get_all_alpha_factor_name()
         for i in range(0, len(alpha_factor_list)):
             alpha_name = alpha_factor_list[i]
-            print(i, alpha_name)
             self.split_alpha(beg_date, end_date, alpha_name, period, stock_pool_name)
 
 
 if __name__ == "__main__":
 
-    """ 计算单个因子 """
+    """ 参数 """
 
     self = AlphaSplit()
     beg_date, end_date, period = "20040101", "20190329", "W"
     stock_pool_name = "AllChinaStockFilter"
-    factor_name = "alpha_raw_ep"
-    self.split_alpha(beg_date, end_date, factor_name, period, stock_pool_name)
+    factor_name = "alpha_raw_sue0"
+
+    """ 计算单个因子 """
+
+    self.split_alpha(beg_date, end_date, factor_name, period, "AllChinaStockFilter")
+    self.split_alpha(beg_date, end_date, factor_name, period, "hs300")
+    self.split_alpha(beg_date, end_date, factor_name, period, "zz500")
     print(self.get_alpha_res_corr(factor_name, beg_date, end_date, period, stock_pool_name))
     print(self.get_alpha_risk_exposure(factor_name, stock_pool_name))
 
     """ 计算所有因子 """
-    self.split_alpha_all(beg_date, end_date, period, "AllChinaStockFilter")
-    self.split_alpha_all(beg_date, end_date, period, "hs300")
-    self.split_alpha_all(beg_date, end_date, period, "zz500")
+
+    # self.split_alpha_all(beg_date, end_date, period, "AllChinaStockFilter")
+    # self.split_alpha_all(beg_date, end_date, period, "hs300")
+    # self.split_alpha_all(beg_date, end_date, period, "zz500")

@@ -233,11 +233,13 @@ class AlphaSummary(Data):
 
         excel.close()
 
-    def cal_all_factor_return(self, beg_date, end_date, period="W", stock_pool_name="AllChinaStockFilter", force=0):
+    def cal_all_factor_return(self, beg_date, end_date, factor_list=None,
+                              period="W", stock_pool_name="AllChinaStockFilter", force=1):
 
         """ 计算所有因子收益率 """
 
-        factor_list = AlphaSplit().get_all_alpha_factor_name(stock_pool_name)
+        if factor_list is None:
+            factor_list = AlphaSplit().get_all_alpha_factor_name(stock_pool_name)
 
         for i in range(0, len(factor_list)):
 
@@ -250,11 +252,13 @@ class AlphaSummary(Data):
             else:
                 print("Already Exist Alpha Factor Return", factor_name)
 
-    def cal_all_factor_summary(self, beg_date, end_date, period="W", stock_pool_name="AllChinaStockFilter", force=0):
+    def cal_all_factor_summary(self, beg_date, end_date, factor_list=None,
+                               period="W", stock_pool_name="AllChinaStockFilter", force=1):
 
         """ 计算所有因子表现 """
 
-        factor_list = AlphaSplit().get_all_alpha_factor_name(stock_pool_name)
+        if factor_list is None:
+            factor_list = AlphaSplit().get_all_alpha_factor_name(stock_pool_name)
 
         for i in range(0, len(factor_list)):
 
@@ -316,26 +320,43 @@ class AlphaSummary(Data):
 
 if __name__ == '__main__':
 
-    """ 计算一个因子 """
+    """ 参数 """
+
     self = AlphaSummary()
     beg_date, end_date, period = "20040101", datetime.today().strftime("%Y%m%d"), "W"
-    factor_name = "daily_alpha_raw_ts_rank9"
+    factor_name = "alpha_raw_sue0"
     stock_pool_name = "AllChinaStockFilter"
-    # self.cal_factor_return(beg_date, end_date, factor_name, period, stock_pool_name)
-    # self.cal_factor_summary(beg_date, end_date, factor_name, period)
 
-    """ 计算所有因子在某个股票池 """
+    """ 计算一个因子 在某个股票池 """
+
     stock_pool_name = "AllChinaStockFilter"
-    self.cal_all_factor_return(beg_date, end_date, period, stock_pool_name, 0)
-    self.cal_all_factor_summary(beg_date, end_date, period, stock_pool_name, 0)
+    self.cal_factor_return(beg_date, end_date, factor_name, period, stock_pool_name)
+    self.cal_factor_summary(beg_date, end_date, factor_name, period, stock_pool_name)
     self.concat_summary(stock_pool_name)
 
     stock_pool_name = "hs300"
-    self.cal_all_factor_return(beg_date, end_date, period, stock_pool_name, 0)
-    self.cal_all_factor_summary(beg_date, end_date, period, stock_pool_name, 0)
+    self.cal_factor_return(beg_date, end_date, factor_name, period, stock_pool_name)
+    self.cal_factor_summary(beg_date, end_date, factor_name, period, stock_pool_name)
     self.concat_summary(stock_pool_name)
 
     stock_pool_name = "zz500"
-    self.cal_all_factor_return(beg_date, end_date, period, stock_pool_name, 0)
-    self.cal_all_factor_summary(beg_date, end_date, period, stock_pool_name, 0)
+    self.cal_factor_return(beg_date, end_date, factor_name, period, stock_pool_name)
+    self.cal_factor_summary(beg_date, end_date, factor_name, period, stock_pool_name)
     self.concat_summary(stock_pool_name)
+
+    """ 计算所有因子 在某个股票池 """
+
+    # stock_pool_name = "AllChinaStockFilter"
+    # self.cal_all_factor_return(beg_date, end_date, period, stock_pool_name, 0)
+    # self.cal_all_factor_summary(beg_date, end_date, period, stock_pool_name, 0)
+    # self.concat_summary(stock_pool_name)
+    #
+    # stock_pool_name = "hs300"
+    # self.cal_all_factor_return(beg_date, end_date, period, stock_pool_name, 0)
+    # self.cal_all_factor_summary(beg_date, end_date, period, stock_pool_name, 0)
+    # self.concat_summary(stock_pool_name)
+    #
+    # stock_pool_name = "zz500"
+    # self.cal_all_factor_return(beg_date, end_date, period, stock_pool_name, 0)
+    # self.cal_all_factor_summary(beg_date, end_date, period, stock_pool_name, 0)
+    # self.concat_summary(stock_pool_name)

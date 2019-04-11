@@ -1,43 +1,74 @@
 import os
 import numpy as np
 import pandas as pd
-import statsmodels.api as sm
 
 from quant.data.data import Data
 from quant.stock.date import Date
 from quant.stock.stock import Stock
 from quant.stock.barra import Barra
-from quant.utility.factor_preprocess import FactorPreProcess
+
+from quant.project.multi_factor.alpha_model.sample.alpha_split import AlphaSplit
+from quant.project.multi_factor.alpha_model.sample.alpha_summary import AlphaSummary
+from quant.project.multi_factor.alpha_model.sample.alpha_concat import AlphaConcat
 from quant.project.multi_factor.alpha_model.exposure.alpha_factor import AlphaFactor
+from quant.project.multi_factor.alpha_model.exposure.alpha_factor_update import AlphaFactorUpdate
 
 
-class AlphaSimpleMain(object):
+class AlphaMain(object):
 
-    """ 原始因子合成新的因子 """
+    """
+    对于不同股票池
+    1、计算 Alpha 因子暴露
+    2、计算因子收益率 和因子表现
+    3、等权合成大类因子 （估值、盈利、情绪、量价、成长）
+    4、计算大类因子收益率及 因子表现
+    5、ICIR加权合成最终Alpha因子
+    6、计算Alpha因子收益率及 因子表现
+    """
 
     def __init__(self):
         pass
 
-    def equal_weight_sum(self, factor_name_list, new_factor_name):
+    def update_data(self):
 
-        """ 等权加和 """
+        """ 更新数据 """
 
-        data_sum = pd.DataFrame([])
+        Stock().load_h5_primary_factor()
+        Barra().load_barra_data()
 
-        for i_factor in range(len(factor_name_list)):
+    def alpha_pool(self, beg_date, end_date, period, stock_pool_name):
 
-            factor_name = factor_name_list[i_factor]
-            data = Stock().read_factor_h5(factor_name, Stock().get_h5_path("my_alpha"))
-            data_stand = Stock().remove_extreme_value_mad(data)
-            data_stand = Stock().standardization(data_stand)
-            data_sum = data_sum.add(data_stand, fill_value=0.0)
+        """ 更新Alpha因子 在某个股票池 """
 
-        data_sum = data_sum.T.dropna(how='all').T
-        Stock().write_factor_h5(data_sum, new_factor_name, Stock().get_h5_path("my_alpha"))
+        # AlphaSplit().split_alpha_all(beg_date, end_date, "D", stock_pool_name)
 
+        # factor_name_list = AlphaFactor().get_all_alpha_factor_name()
+        # AlphaSummary().cal_all_factor_return("20040101", end_date, factor_name_list, period, stock_pool_name, 1)
+        # AlphaSummary().cal_all_factor_summary("20040101", end_date, factor_name_list, period, stock_pool_name, 1)
+
+        # AlphaConcat().ew_to_all_major_alpha(stock_pool_name, beg_date, end_date, period)
+        factor_name_list = AlphaFactor().get_major_alpha_name()
+        AlphaSummary().cal_all_factor_return("20040101", end_date, factor_name_list, period, stock_pool_name, 1)
+        AlphaSummary().cal_all_factor_summary("20040101", end_date, factor_name_list, period, stock_pool_name, 1)
+
+        # AlphaConcat().ew_to_alpha(stock_pool_name)
+        AlphaSummary().cal_all_factor_return("20040101", end_date, ["alpha"], period, stock_pool_name, 1)
+        AlphaSummary().cal_all_factor_summary("20040101", end_date, ["alpha"], period, stock_pool_name, 1)
+        AlphaSummary().concat_summary(stock_pool_name)
+
+    def alpha_main(self, beg_date, end_date, period):
+
+        """ 更新Alpha因子在所有股票池 """
+
+        # AlphaFactorUpdate().update_alpha_factor(beg_date, end_date)
+        # AlphaFactorUpdate().check_alpha_factor_update_date()
+        self.alpha_pool(beg_date, end_date, period, "AllChinaStockFilter")
+        self.alpha_pool(beg_date, end_date, period, "hs300")
+        self.alpha_pool(beg_date, end_date, period, "zz500")
 
 if __name__ == '__main__':
 
-    factor_name_list = ['GrossProfitTTMMarketValueDaily', 'IncomeYOYDaily', 'ROEQuarterDaily']
-    new_factor_name = 'Factor_Equal_3'
-    AlphaCompound().equal_weight_sum(factor_name_list, new_factor_name)
+    beg_date, end_date, period = "20190301", "20190404", "W"
+    self = AlphaMain()
+    # self.update_data()
+    self.alpha_main(beg_date, end_date, period)
