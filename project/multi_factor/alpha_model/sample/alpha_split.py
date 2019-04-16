@@ -162,14 +162,20 @@ class AlphaSplit(Data):
         self.save_alpha_risk_exposure(exposure_risk, factor_name, stock_pool_name)
         self.save_alpha_res_exposure(res_alpha, factor_name, stock_pool_name)
 
-    def split_alpha_all(self, beg_date, end_date, period="W", stock_pool_name="AllChinaStockFilter"):
+    def split_alpha_all(self, beg_date, end_date, period="W", stock_pool_name="AllChinaStockFilter", force=1):
 
         """ 拆分所有Alpha """
 
         alpha_factor_list = AlphaFactor().get_all_alpha_factor_name()
+
         for i in range(0, len(alpha_factor_list)):
             alpha_name = alpha_factor_list[i]
-            self.split_alpha(beg_date, end_date, alpha_name, period, stock_pool_name)
+            hdf_res_path = os.path.join(self.data_path, stock_pool_name, "res_alpha\hdf")
+            file = os.path.join(hdf_res_path, alpha_name + '.h5')
+            if (not os.path.exists(file)) or (force == 1):
+                self.split_alpha(beg_date, end_date, alpha_name, period, stock_pool_name)
+            else:
+                print("%s Already Exist" % alpha_name)
 
 
 if __name__ == "__main__":
@@ -179,18 +185,18 @@ if __name__ == "__main__":
     self = AlphaSplit()
     beg_date, end_date, period = "20040101", "20190329", "W"
     stock_pool_name = "AllChinaStockFilter"
-    factor_name = "alpha_raw_sue0"
+    factor_name = "alpha_raw_ff3_vol"
 
     """ 计算单个因子 """
 
-    self.split_alpha(beg_date, end_date, factor_name, period, "AllChinaStockFilter")
-    self.split_alpha(beg_date, end_date, factor_name, period, "hs300")
-    self.split_alpha(beg_date, end_date, factor_name, period, "zz500")
-    print(self.get_alpha_res_corr(factor_name, beg_date, end_date, period, stock_pool_name))
-    print(self.get_alpha_risk_exposure(factor_name, stock_pool_name))
+    # self.split_alpha(beg_date, end_date, factor_name, period, "AllChinaStockFilter")
+    # self.split_alpha(beg_date, end_date, factor_name, period, "hs300")
+    # self.split_alpha(beg_date, end_date, factor_name, period, "zz500")
+    # print(self.get_alpha_res_corr(factor_name, beg_date, end_date, period, stock_pool_name))
+    # print(self.get_alpha_risk_exposure(factor_name, stock_pool_name))
 
     """ 计算所有因子 """
 
-    # self.split_alpha_all(beg_date, end_date, period, "AllChinaStockFilter")
-    # self.split_alpha_all(beg_date, end_date, period, "hs300")
-    # self.split_alpha_all(beg_date, end_date, period, "zz500")
+    self.split_alpha_all(beg_date, end_date, period, "AllChinaStockFilter", 0)
+    self.split_alpha_all(beg_date, end_date, period, "hs300", 0)
+    self.split_alpha_all(beg_date, end_date, period, "zz500", 0)

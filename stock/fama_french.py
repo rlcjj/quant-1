@@ -415,5 +415,6 @@ if __name__ == '__main__':
     # self.load_data(beg_date, today)
     # self.cal_all_factor_pct()
     # self.ff3_model(beg_date, end_date)
-    # self.ff5_model("20150101", "20180101")
+    self.ff5_model("20080101", "20120101")
+    self.ff5_model("20040101", "20080101")
     print(self.get_data(model_name, factor_name))

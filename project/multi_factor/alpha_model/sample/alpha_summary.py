@@ -8,6 +8,7 @@ from quant.stock.date import Date
 from quant.stock.stock import Stock
 from quant.utility.write_excel import WriteExcel
 from quant.project.multi_factor.alpha_model.sample.alpha_split import AlphaSplit
+from quant.project.multi_factor.alpha_model.exposure.alpha_factor import AlphaFactor
 
 
 class AlphaSummary(Data):
@@ -92,16 +93,18 @@ class AlphaSummary(Data):
             else:
                 print("Calculating %s Alpha Return At %s %s is Null" % (factor_name, data_date, stock_pool_name))
 
-        # save file
-        alpha_return = alpha_return.dropna(subset=['FactorReturn'])
-        alpha_return["CumFactorReturn"] = alpha_return['FactorReturn'].cumsum()
-        alpha_return[self.cum_labels] = alpha_return[self.labels].cumsum()
+        if len(alpha_return) > 0:
 
-        path = os.path.join(self.return_path, stock_pool_name)
-        if not os.path.exists(path):
-            os.makedirs(path)
-        file = os.path.join(path, 'factor_return_%s.csv' % factor_name)
-        alpha_return.to_csv(file)
+            # save file
+            alpha_return = alpha_return.dropna(subset=['FactorReturn'])
+            alpha_return["CumFactorReturn"] = alpha_return['FactorReturn'].cumsum()
+            alpha_return[self.cum_labels] = alpha_return[self.labels].cumsum()
+
+            path = os.path.join(self.return_path, stock_pool_name)
+            if not os.path.exists(path):
+                os.makedirs(path)
+            file = os.path.join(path, 'factor_return_%s.csv' % factor_name)
+            alpha_return.to_csv(file)
 
     def get_factor_return(self, factor_name, stock_pool_name="AllChinaStockFilter"):
 
@@ -128,86 +131,89 @@ class AlphaSummary(Data):
 
         """ 计算每年的因子表现（首先得计算因子收益率 残差因子暴露等信息） """
 
-        year_number = Date().get_period_number_for_year(period)
-        alpha_return = self.get_factor_return(factor_name, stock_pool_name)
-        alpha_return = alpha_return.loc[beg_date:end_date, :]
+        try:
+            year_number = Date().get_period_number_for_year(period)
+            alpha_return = self.get_factor_return(factor_name, stock_pool_name)
+            alpha_return = alpha_return.loc[beg_date:end_date, :]
 
-        alpha_return['year'] = alpha_return.index.map(lambda x: datetime.strptime(x, "%Y%m%d").year)
-        alpha_return['date'] = alpha_return.index
+            alpha_return['year'] = alpha_return.index.map(lambda x: datetime.strptime(x, "%Y%m%d").year)
+            alpha_return['date'] = alpha_return.index
 
-        # summary 部分:每年 因子收益率 ICIR等
-        bg_date = alpha_return.groupby(by=['year'])['date'].min()
-        ed_date = alpha_return.groupby(by=['year'])['date'].max()
-        year_fr = alpha_return.groupby(by=['year'])['FactorReturn'].sum()
-        year_fr_std = alpha_return.groupby(by=['year'])['FactorReturn'].std() * np.sqrt(year_number)
-        year_count = alpha_return.groupby(by=['year'])['FactorReturn'].count()
-        year_ic_mean = alpha_return.groupby(by=['year'])['IC'].mean()
-        year_ic_std = alpha_return.groupby(by=['year'])['IC'].std()
-        summary = pd.concat([year_fr, year_fr_std, year_count, year_ic_mean, year_ic_std, bg_date, ed_date], axis=1)
-        summary.columns = ['年化收益', '年化波动率', '调仓次数', 'IC均值', 'IC波动', '开始时间', '结束时间']
-        summary['年化收益'] = summary['年化收益'] / summary['调仓次数'] * year_number
-        summary['ICIR'] = summary['IC均值'] / summary['IC波动'] * np.sqrt(year_number)
+            # summary 部分:每年 因子收益率 ICIR等
+            bg_date = alpha_return.groupby(by=['year'])['date'].min()
+            ed_date = alpha_return.groupby(by=['year'])['date'].max()
+            year_fr = alpha_return.groupby(by=['year'])['FactorReturn'].sum()
+            year_fr_std = alpha_return.groupby(by=['year'])['FactorReturn'].std() * np.sqrt(year_number)
+            year_count = alpha_return.groupby(by=['year'])['FactorReturn'].count()
+            year_ic_mean = alpha_return.groupby(by=['year'])['IC'].mean()
+            year_ic_std = alpha_return.groupby(by=['year'])['IC'].std()
+            summary = pd.concat([year_fr, year_fr_std, year_count, year_ic_mean, year_ic_std, bg_date, ed_date], axis=1)
+            summary.columns = ['年化收益', '年化波动率', '调仓次数', 'IC均值', 'IC波动', '开始时间', '结束时间']
+            summary['年化收益'] = summary['年化收益'] / summary['调仓次数'] * year_number
+            summary['ICIR'] = summary['IC均值'] / summary['IC波动'] * np.sqrt(year_number)
 
-        back_test_days = Date().get_trade_date_diff(alpha_return.index[0], alpha_return.index[-1])
-        year = back_test_days / self.year_trade_days
-        summary.loc['All', '年化收益'] = alpha_return["FactorReturn"].sum() / year
-        summary.loc['All', '年化波动率'] = alpha_return["FactorReturn"].std() * np.sqrt(year_number)
-        summary.loc['All', '调仓次数'] = summary['调仓次数'].sum()
-        summary.loc['All', 'ICIR'] = alpha_return["IC"].mean() / alpha_return["IC"].std() * np.sqrt(year_number)
-        summary.loc['All', 'IC均值'] = alpha_return["IC"].mean()
-        summary.loc['All', 'IC波动'] = alpha_return["IC"].std()
-        summary.loc['All', '开始时间'] = alpha_return.index[0]
-        summary.loc['All', '结束时间'] = alpha_return.index[-1]
-        summary.index = summary.index.map(str)
+            back_test_days = Date().get_trade_date_diff(alpha_return.index[0], alpha_return.index[-1])
+            year = back_test_days / self.year_trade_days
+            summary.loc['All', '年化收益'] = alpha_return["FactorReturn"].sum() / year
+            summary.loc['All', '年化波动率'] = alpha_return["FactorReturn"].std() * np.sqrt(year_number)
+            summary.loc['All', '调仓次数'] = summary['调仓次数'].sum()
+            summary.loc['All', 'ICIR'] = alpha_return["IC"].mean() / alpha_return["IC"].std() * np.sqrt(year_number)
+            summary.loc['All', 'IC均值'] = alpha_return["IC"].mean()
+            summary.loc['All', 'IC波动'] = alpha_return["IC"].std()
+            summary.loc['All', '开始时间'] = alpha_return.index[0]
+            summary.loc['All', '结束时间'] = alpha_return.index[-1]
+            summary.index = summary.index.map(str)
 
-        for i in range(len(summary)):
+            for i in range(len(summary)):
+                label = summary.index[i]
+                bdate = summary.loc[label, "开始时间"]
+                edate = summary.loc[label, "结束时间"]
+                corr_mean = AlphaSplit().get_alpha_res_corr(factor_name, bdate, edate, period, stock_pool_name)
+                summary.loc[label, "自相关系数"] = corr_mean
 
-            label = summary.index[i]
-            bdate = summary.loc[label, "开始时间"]
-            edate = summary.loc[label, "结束时间"]
-            corr_mean = AlphaSplit().get_alpha_res_corr(factor_name, bdate, edate, period, stock_pool_name)
-            summary.loc[label, "自相关系数"] = corr_mean
+            # group 部分:每年 分组收益等
+            group = alpha_return.groupby(by=['year'])[self.labels].sum()
+            group.loc['All', self.labels] = alpha_return[self.labels].sum() / year
+            group.index = group.index.map(str)
 
-        # group 部分:每年 分组收益等
-        group = alpha_return.groupby(by=['year'])[self.labels].sum()
-        group.loc['All', self.labels] = alpha_return[self.labels].sum() / year
-        group.index = group.index.map(str)
+            for i in range(len(group)):
+                year = group.index[i]
+                corr_pd = pd.DataFrame(group.loc[year, self.labels].values, index=self.labels, columns=['group_return'])
+                corr_pd['group_number'] = (list(range(1, self.group_number + 1)))
+                group.loc[year, 'Group_Corr'] = corr_pd.corr().iloc[0, 1]
 
-        for i in range(len(group)):
-            year = group.index[i]
-            corr_pd = pd.DataFrame(group.loc[year, self.labels].values, index=self.labels, columns=['group_return'])
-            corr_pd['group_number'] = (list(range(1, self.group_number + 1)))
-            group.loc[year, 'Group_Corr'] = corr_pd.corr().iloc[0, 1]
+            # 写入Excel
+            path = os.path.join(self.summary_path, stock_pool_name)
+            if not os.path.exists(path):
+                os.makedirs(path)
+            filename = os.path.join(path, 'summary_%s.xlsx' % factor_name)
 
-        # 写入Excel
-        path = os.path.join(self.summary_path, stock_pool_name)
-        if not os.path.exists(path):
-            os.makedirs(path)
-        filename = os.path.join(path, 'summary_%s.xlsx' % factor_name)
+            sheet_name = factor_name
+            excel = WriteExcel(filename)
+            worksheet = excel.add_worksheet(sheet_name)
 
-        sheet_name = factor_name
-        excel = WriteExcel(filename)
-        worksheet = excel.add_worksheet(sheet_name)
+            num_format_pd = pd.DataFrame([], columns=summary.columns, index=['format'])
+            num_format_pd.loc['format', :] = '0.00%'
+            num_format_pd.loc['format', ['调仓次数', 'ICIR']] = '0.00'
+            excel.write_pandas(summary, worksheet, begin_row_number=0, begin_col_number=1,
+                               num_format_pd=num_format_pd, color="red", fillna=True)
 
-        num_format_pd = pd.DataFrame([], columns=summary.columns, index=['format'])
-        num_format_pd.loc['format', :] = '0.00%'
-        num_format_pd.loc['format', ['调仓次数', 'ICIR']] = '0.00'
-        excel.write_pandas(summary, worksheet, begin_row_number=0, begin_col_number=1,
-                           num_format_pd=num_format_pd, color="red", fillna=True)
+            num_format_pd = pd.DataFrame([], columns=group.columns, index=['format'])
+            num_format_pd.loc['format', :] = '0.00%'
+            num_format_pd.loc['format', ['Group_Corr']] = '0.00'
+            beg_col = 3 + len(summary.columns)
+            excel.write_pandas(group, worksheet, begin_row_number=0, begin_col_number=beg_col,
+                               num_format_pd=num_format_pd, color="blue", fillna=True)
 
-        num_format_pd = pd.DataFrame([], columns=group.columns, index=['format'])
-        num_format_pd.loc['format', :] = '0.00%'
-        num_format_pd.loc['format', ['Group_Corr']] = '0.00'
-        beg_col = 3 + len(summary.columns)
-        excel.write_pandas(group, worksheet, begin_row_number=0, begin_col_number=beg_col,
-                           num_format_pd=num_format_pd, color="blue", fillna=True)
+            pos_pic = len(summary.index) + 3
+            pos_end = len(summary.index) + 1
+            excel.chart_columns_plot(worksheet, sheet_name, series_name=["分组超额收益"],
+                                     chart_name="分组超额收益%s" % factor_name,
+                                     insert_pos="B%s" % pos_pic, cat_beg="N1", cat_end="W1",
+                                     val_beg_list=["N%s" % pos_end], val_end_list=["W%s" % pos_end])
 
-        pos_pic = len(summary.index) + 3
-        pos_end = len(summary.index) + 1
-        excel.chart_columns_plot(worksheet, sheet_name, series_name=["分组超额收益"],
-                                 chart_name="分组超额收益%s" % factor_name,
-                                 insert_pos="B%s" % pos_pic, cat_beg="N1", cat_end="W1",
-                                 val_beg_list=["N%s" % pos_end], val_end_list=["W%s" % pos_end])
+        except:
+            print("没有因子Summary")
 
         try:
 
@@ -228,10 +234,11 @@ class AlphaSummary(Data):
                                      chart_name="风格暴露%s" % factor_name,
                                      insert_pos="N%s" % pos_pic, cat_beg="AA1", cat_end="AJ1",
                                      val_beg_list=["AA%s" % pos_end], val_end_list=["AJ%s" % pos_end])
+            excel.close()
         except:
             print("没有残差因子在风险上的暴露程度")
 
-        excel.close()
+
 
     def cal_all_factor_return(self, beg_date, end_date, factor_list=None,
                               period="W", stock_pool_name="AllChinaStockFilter", force=1):
@@ -324,39 +331,41 @@ if __name__ == '__main__':
 
     self = AlphaSummary()
     beg_date, end_date, period = "20040101", datetime.today().strftime("%Y%m%d"), "W"
-    factor_name = "alpha_raw_sue0"
+    factor_name = "alpha_raw_ff3_vol"
     stock_pool_name = "AllChinaStockFilter"
 
     """ 计算一个因子 在某个股票池 """
 
-    stock_pool_name = "AllChinaStockFilter"
-    self.cal_factor_return(beg_date, end_date, factor_name, period, stock_pool_name)
-    self.cal_factor_summary(beg_date, end_date, factor_name, period, stock_pool_name)
-    self.concat_summary(stock_pool_name)
-
-    stock_pool_name = "hs300"
-    self.cal_factor_return(beg_date, end_date, factor_name, period, stock_pool_name)
-    self.cal_factor_summary(beg_date, end_date, factor_name, period, stock_pool_name)
-    self.concat_summary(stock_pool_name)
-
-    stock_pool_name = "zz500"
-    self.cal_factor_return(beg_date, end_date, factor_name, period, stock_pool_name)
-    self.cal_factor_summary(beg_date, end_date, factor_name, period, stock_pool_name)
-    self.concat_summary(stock_pool_name)
-
-    """ 计算所有因子 在某个股票池 """
-
     # stock_pool_name = "AllChinaStockFilter"
-    # self.cal_all_factor_return(beg_date, end_date, period, stock_pool_name, 0)
-    # self.cal_all_factor_summary(beg_date, end_date, period, stock_pool_name, 0)
+    # self.cal_factor_return(beg_date, end_date, factor_name, period, stock_pool_name)
+    # self.cal_factor_summary(beg_date, end_date, factor_name, period, stock_pool_name)
     # self.concat_summary(stock_pool_name)
     #
     # stock_pool_name = "hs300"
-    # self.cal_all_factor_return(beg_date, end_date, period, stock_pool_name, 0)
-    # self.cal_all_factor_summary(beg_date, end_date, period, stock_pool_name, 0)
+    # self.cal_factor_return(beg_date, end_date, factor_name, period, stock_pool_name)
+    # self.cal_factor_summary(beg_date, end_date, factor_name, period, stock_pool_name)
     # self.concat_summary(stock_pool_name)
     #
     # stock_pool_name = "zz500"
-    # self.cal_all_factor_return(beg_date, end_date, period, stock_pool_name, 0)
-    # self.cal_all_factor_summary(beg_date, end_date, period, stock_pool_name, 0)
+    # self.cal_factor_return(beg_date, end_date, factor_name, period, stock_pool_name)
+    # self.cal_factor_summary(beg_date, end_date, factor_name, period, stock_pool_name)
     # self.concat_summary(stock_pool_name)
+
+    """ 计算所有因子 在某个股票池 """
+
+    factor_name_list = AlphaFactor().get_all_alpha_factor_name()
+
+    stock_pool_name = "AllChinaStockFilter"
+    self.cal_all_factor_return(beg_date, end_date, factor_name_list, period, stock_pool_name, 0)
+    self.cal_all_factor_summary(beg_date, end_date, factor_name_list, period, stock_pool_name, 0)
+    self.concat_summary(stock_pool_name)
+
+    stock_pool_name = "hs300"
+    self.cal_all_factor_return(beg_date, end_date, factor_name_list, period, stock_pool_name, 0)
+    self.cal_all_factor_summary(beg_date, end_date, factor_name_list, period, stock_pool_name, 0)
+    self.concat_summary(stock_pool_name)
+
+    stock_pool_name = "zz500"
+    self.cal_all_factor_return(beg_date, end_date, factor_name_list, period, stock_pool_name, 0)
+    self.cal_all_factor_summary(beg_date, end_date, factor_name_list, period, stock_pool_name, 0)
+    self.concat_summary(stock_pool_name)

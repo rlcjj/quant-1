@@ -53,13 +53,13 @@ class NiceIndexFund(Data):
         Fund().load_wind_fund_info()
 
         # 基金净值数据 和指数价格额数据
-        beg_date = Date().get_trade_date_offset(end_date, -30)
+        beg_date = Date().get_trade_date_offset(end_date, -20)
         Fund().load_fund_factor_all(beg_date, end_date)
         Index().load_index_factor_all(beg_date, end_date)
 
         # 计算基金和指数暴露
         Barra().load_barra_data()
-        beg_date = Date().get_trade_date_offset(end_date, -30)
+        beg_date = Date().get_trade_date_offset(end_date, -20)
         Index().cal_index_exposure("000300.SH", beg_date=beg_date, end_date=end_date)
         Index().cal_index_exposure("000905.SH", beg_date=beg_date, end_date=end_date)
 
@@ -326,8 +326,8 @@ class NiceIndexFund(Data):
             val_75 = min(0.05, fund_factor.loc[:, '跟踪误差'].quantile(0.80))
 
         result.loc[:, '跟踪误差'] = fund_factor.loc[:, '跟踪误差']
-        if adjust and "162216.OF" in result.index:
-            result.loc["162216.OF", '跟踪误差'] -= 0.0025
+        if adjust and "001733.OF" in result.index:
+            result.loc["001733.OF", '跟踪误差'] -= 0.001
 
         result.loc[:, '跟踪误差得分'] = fund_factor.loc[:, '跟踪误差'].map(lambda x:
                                                                  self.score_quarter_reverse(x, val_25, val_75)).round(2)
@@ -342,8 +342,8 @@ class NiceIndexFund(Data):
             val_75 = min(0.10, fund_factor.loc[:, '超额收益'].quantile(0.80))
 
         result.loc[:, '超额收益'] = fund_factor.loc[:, '超额收益']
-        if adjust and "162216.OF" in result.index:
-            result.loc["162216.OF", '跟踪误差'] += 0.0025
+        if adjust and "001733.OF" in result.index:
+            result.loc["001733.OF", '超额收益'] += 0.001
         result.loc[:, '超额收益得分'] = fund_factor.loc[:, '超额收益'].map(lambda x:
                                                                  self.score_quarter(x, val_25, val_75)).round(2)
 
@@ -365,8 +365,8 @@ class NiceIndexFund(Data):
             result.loc[:, '风格暴露得分'] += result.loc[:, col].map(self.score_ex)
 
         result.loc[:, '风格暴露得分'] = result.loc[:, '风格暴露得分'] * 0.5
-        if adjust and "162216.OF" in result.index:
-            result.loc["162216.OF", '风格暴露得分'] = min(5, result.loc["162216.OF", '风格暴露得分'] + 0.5)
+        if adjust and "001733.OF" in result.index:
+            result.loc["001733.OF", '风格暴露得分'] = min(5, result.loc["001733.OF", '风格暴露得分'] + 0.5)
         val_25 = result.loc[:, '风格暴露得分'].quantile(0.20)
         val_75 = result.loc[:, '风格暴露得分'].quantile(0.80)
 
@@ -384,8 +384,8 @@ class NiceIndexFund(Data):
         else:
             result['总得分'] += result['跟踪误差得分'] * 0.10
             result['总得分'] += result['超额收益得分'] * 0.40
-            result['总得分'] += result['信息比率得分'] * 0.20
-            result['总得分'] += result['风格暴露得分'] * 0.30
+            result['总得分'] += result['信息比率得分'] * 0.30
+            result['总得分'] += result['风格暴露得分'] * 0.20
 
         result = result.sort_values(by=['总得分'], ascending=False)
 
@@ -484,12 +484,12 @@ class NiceIndexFund(Data):
 if __name__ == '__main__':
 
     self = NiceIndexFund()
-    end_date = "20190315"
+    end_date = "20190415"
     halfyear_date = "20180630"
     index_name = "沪深300"
     index_code = "000300.SH"
     recal_exposure = False   # 是否重新计算基金暴露
-    adjust = True  # 调整中证500数据
+    adjust = True  # 调整量化增强数据
 
     # self.filter_fund_pool("000300.SH", "沪深300", end_date, 0.045)
     # self.filter_fund_pool("000905.SH", "中证500", end_date, 0.07)

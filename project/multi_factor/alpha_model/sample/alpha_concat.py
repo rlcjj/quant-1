@@ -1,3 +1,4 @@
+import numpy as np
 import pandas as pd
 
 from quant.data.data import Data
@@ -32,7 +33,7 @@ class AlphaConcat(Data):
             min_corr = 0.85
         else:
             min_icir = 1.5
-            min_corr = 0.85
+            min_corr = 0.80
 
         result = pd.DataFrame()
 
@@ -52,9 +53,9 @@ class AlphaConcat(Data):
                 alpha = AlphaSplit().get_alpha_res_exposure(name, stock_pool_name)
                 print(date, name, icir, corr)
 
-                if corr >= min_corr and icir > min_icir and date in alpha.columns:
+                if corr >= min_corr and np.abs(icir) > min_icir and date in alpha.columns:
 
-                    alpha_date = pd.DataFrame(alpha[date])
+                    alpha_date = pd.DataFrame(alpha[date]) * np.sign(icir)
                     alpha_date.columns = [name]
                     res_date = pd.concat([res_date, alpha_date], axis=1)
 
@@ -100,7 +101,7 @@ if __name__ == "__main__":
 
     self = AlphaConcat()
     stock_pool_name = "AllChinaStockFilter"
-    beg_date, end_date, period = "20050101", "20190404", "W"
+    beg_date, end_date, period = "20181101", "20190404", "W"
 
     self.ew_to_all_major_alpha(stock_pool_name, beg_date, end_date, period)
     self.ew_to_all_major_alpha("hs300", beg_date, end_date, period)

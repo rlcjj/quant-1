@@ -1,8 +1,14 @@
+import os
+import numpy as np
+import pandas as pd
 from datetime import datetime
 
+from quant.stock.index import Index
+from quant.mfc.mfc_data import MfcData
+from quant.fund.fund_rank import FundRank
+from quant.mfc.mfc_table import MfcTable
 from quant.utility.write_excel import WriteExcel
-
-from data.mfc.mfc_table import *
+from quant.utility.financial_series import FinancialSeries
 
 
 def write_public_ts(end_date, save_path):
@@ -13,10 +19,10 @@ def write_public_ts(end_date, save_path):
     fund_code = '002263.OF'
     fund_type = "公募"
 
-    benchmark_code = '885012.WI'
-    benchmark_name = '股票型基金总指数'
-    benchmark_code_2 = "000300.SH"
-    benchmark_name_2 = "沪深300"
+    benchmark_code = '885001.WI'
+    benchmark_name = '偏股混合基金总指数'
+    benchmark_code_2 = "881001.WI"
+    benchmark_name_2 = "WIND全A"
 
     setup_date = '20160223'
     today = datetime.strptime(end_date, "%Y%m%d")
@@ -32,9 +38,9 @@ def write_public_ts(end_date, save_path):
                            ["过去2年", before_2y, end_date, before_2y]])
 
     benchmark_array = np.array([["沪深300", "000300.SH"],
-                                ["中证500", "000905.SH"],
-                                ["股票型基金总指数", '885012.WI'],
-                                ["创业板指", '399006.SZ'],
+                                # ["中证500", "000905.SH"],
+                                ["偏股混合基金总指数", '885001.WI'],
+                                # ["创业板指", '399006.SZ'],
                                 ["WIND全A", '881001.WI']])
 
     from quant.fund.fund import Fund
@@ -51,11 +57,11 @@ def write_public_ts(end_date, save_path):
     # 写入基金表现 和基金排名
     ###########################################################################################
     performance_table = MfcTable().cal_summary_table_sample(fund_name, fund_code, fund_type, date_array, benchmark_array)
-    rank1 = FundRank().rank_fund_array2(fund_pct, bench_pct, fund_code, date_array, "灵活配置型基金_60", excess=False)
-    rank2 = FundRank().rank_fund_array2(fund_pct, bench_pct, fund_code, date_array, "股票型基金", excess=False)
-    rank3 = FundRank().rank_fund_array2(fund_pct, bench_pct, fund_code, date_array, "偏股混合型基金", excess=False)
-    rank4 = FundRank().rank_fund_array2(fund_pct, bench_pct, fund_code, date_array, "股票+灵活配置60型基金", excess=False)
-    performance_table = pd.concat([performance_table, rank1, rank2, rank3, rank4], axis=0)
+    rank1 = FundRank().rank_fund_array2(fund_pct, bench_pct, fund_code, date_array, "偏股混合型基金", excess=False)
+    # rank2 = FundRank().rank_fund_array2(fund_pct, bench_pct, fund_code, date_array, "股票型基金", excess=False)
+    # rank3 = FundRank().rank_fund_array2(fund_pct, bench_pct, fund_code, date_array, "偏股混合型基金", excess=False)
+    # rank4 = FundRank().rank_fund_array2(fund_pct, bench_pct, fund_code, date_array, "股票+灵活配置60型基金", excess=False)
+    performance_table = pd.concat([performance_table, rank1], axis=0)
 
     col_number = 1
     num_format_pd = pd.DataFrame([], columns=performance_table.columns, index=['format'])
@@ -102,5 +108,5 @@ if __name__ == '__main__':
 
     from quant.data.data import Data
     save_path = os.path.join(Data().primary_data_path, "mfcteda_data\performance")
-    end_date = '20181130'
+    end_date = '20190331'
     write_public_ts(end_date, save_path)

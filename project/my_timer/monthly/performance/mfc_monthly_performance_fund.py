@@ -34,6 +34,10 @@ from quant.project.my_timer.monthly.performance.write_fun.write_rs_duocelue_fund
 from quant.project.my_timer.monthly.performance.write_fun.write_rs_gushou_fund import *
 from quant.project.my_timer.monthly.performance.write_fun.write_zlhl_2018_fund import *
 
+from quant.data.data import Data
+from quant.stock.date import Date
+from quant.fund.fund import Fund
+
 
 class MfcMonthlyPerformanceFund(Data):
 
@@ -211,9 +215,18 @@ class MfcMonthlyPerformanceFund(Data):
             public_code.ix[i, '任职回报'] = fs.get_interval_return(begin_date, end_date)
             print(name, val_str, val_pct)
 
-        file = os.path.join(self.data_path, "OutFile", "Rank.csv")
-        public_code.to_csv(file, index_col=[0], encoding='gbk')
-        print("rank all fund")
+        file = os.path.join(self.data_path, "OutFile", "Rank.xlsx")
+        num_format_pd = pd.DataFrame([], columns=public_code.columns, index=['format'])
+        num_format_pd.loc['format', :] = '0.00%'
+        num_format_pd.loc['format', ["任职日期"]] = '0'
+
+        # write pandas
+        sheet_name = "排名"
+        excel = WriteExcel(file)
+        worksheet = excel.add_worksheet(sheet_name)
+        excel.write_pandas(public_code, worksheet, begin_row_number=0, begin_col_number=1,
+                           num_format_pd=num_format_pd, color="red", fillna=True)
+        excel.close()
 
 
 if __name__ == '__main__':
@@ -222,6 +235,7 @@ if __name__ == '__main__':
 
     end_date = Date().get_normal_date_last_month_end_day(datetime.today())
     print(end_date)
+    end_date = "20190412"
     self = MfcMonthlyPerformanceFund()
     # self.update_data()
     # self.write_main(end_date)

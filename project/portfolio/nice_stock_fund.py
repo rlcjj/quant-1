@@ -576,5 +576,5 @@ if __name__ == "__main__":
 
     # self.cal_fund_factor_date(end_date)
     # self.opt_date(end_date, end_last_date, turnover_control=True)
-    # self.generate_wind_file(end_date)
-    WindPortUpLoad().upload_weight_date(port_name, end_date)
+    self.generate_wind_file(end_date)
+    # WindPortUpLoad().upload_weight_date(port_name, end_date)

@@ -54,7 +54,7 @@ class FundPool(Data):
         self.concat_fund_pool(["普通股票型基金", "偏股混合型基金"], date, "股票型基金")
         self.concat_fund_pool(["指数型基金", "量化基金"], date, "指数+量化基金")
         self.concat_fund_pool(["指数型基金", "普通股票型基金", '偏股混合型基金'], date, "指数+主动股票型基金")
-        self.split_fund_pool_300_500(date)
+        # self.split_fund_pool_300_500(date)
         self.split_flexible_fund_pool(date)
         self.concat_fund_pool(["股票型基金", "灵活配置型基金_60"], date, "股票+灵活配置60型基金")
         self.concat_fund_pool(["指数型基金", "普通股票型基金",
@@ -70,6 +70,18 @@ class FundPool(Data):
         data = pd.DataFrame(data.Data, index=data.Fields).T
         data.date = data.date.map(Date.change_to_str)
         data['Type'] = name
+
+        if name == "中证500基金":
+            d = pd.DataFrame([['001733.OF', "泰达宏利量化"]],
+                             columns=['wind_code', 'sec_name'])
+            data = data.append(d)
+            data = data.reset_index(drop=True)
+
+        if name == "沪深300基金":
+            d = pd.DataFrame([['004484.OF', '泰达宏利业绩驱动']],
+                             columns=['wind_code', 'sec_name'])
+            data = data.append(d)
+            data = data.reset_index(drop=True)
 
         if name == "指数增强型基金":
             d = pd.DataFrame([['001733.OF', "泰达宏利量化"],
@@ -269,6 +281,13 @@ class FundPool(Data):
         data_hs300 = data_hs300[(data_hs300['if_connect'] == '非联接基金') &
                                 (data_hs300['if_hk'] == '非港股基金') &
                                 (data_hs300['if_a'] == 'A类基金')]
+        data_hs300.loc["004484.OF", "sec_name"] = "泰达宏利业绩驱动"
+        data_hs300['wind_code'] = data_hs300.index
+        data_hs300.loc["004484.OF", "setupdate"] = "20170906"
+        data_hs300.loc["004484.OF", "if_connect"] = "非联接基金"
+        data_hs300.loc["004484.OF", "if_hk"] = "非港股基金"
+        data_hs300.loc["004484.OF", "if_a"] = "A类基金"
+        data_hs300.loc["004484.OF", "if_etf"] = "非ETF基金"
 
         name = "沪深300基金"
         print(" Split 300 Fund Pool %s At %s" % (name, date))
@@ -282,6 +301,13 @@ class FundPool(Data):
         data_zz500 = data_zz500[(data_zz500['if_connect'] == '非联接基金') &
                                 (data_zz500['if_hk'] == '非港股基金') &
                                 (data_zz500['if_a'] == 'A类基金')]
+        data_zz500.loc["001733.OF", "sec_name"] = "泰达宏利量化"
+        data_zz500['wind_code'] = data_zz500.index
+        data_zz500.loc["001733.OF", "setupdate"] = "20160830"
+        data_zz500.loc["001733.OF", "if_connect"] = "非联接基金"
+        data_zz500.loc["001733.OF", "if_hk"] = "非港股基金"
+        data_zz500.loc["001733.OF", "if_a"] = "A类基金"
+        data_zz500.loc["001733.OF", "if_etf"] = "非ETF基金"
 
         name = "中证500基金"
         print(" Split 500 Fund Pool %s At %s" % (name, date))
@@ -364,8 +390,8 @@ class FundPool(Data):
 
 if __name__ == '__main__':
 
-    date = '20181231'
+    date = '20190331'
     self = FundPool()
 
-    # FundPool().load_fund_pool_all(date)
+    FundPool().load_fund_pool_all(date)
     # print(FundPool().get_fund_pool_code())

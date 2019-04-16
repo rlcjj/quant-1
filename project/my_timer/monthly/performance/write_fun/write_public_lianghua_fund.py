@@ -1,6 +1,14 @@
-from quant.utility.write_excel import WriteExcel
+import os
+import numpy as np
+import pandas as pd
+from datetime import datetime
 
-from data.mfc.mfc_table import *
+from quant.stock.index import Index
+from quant.mfc.mfc_data import MfcData
+from quant.fund.fund_rank import FundRank
+from quant.mfc.mfc_table import MfcTable
+from quant.utility.write_excel import WriteExcel
+from quant.utility.financial_series import FinancialSeries
 
 
 def write_public_lh(end_date, save_path):
@@ -42,12 +50,12 @@ def write_public_lh(end_date, save_path):
     # 写入基金表现 和基金排名
     ###########################################################################################
     performance_table = MfcTable().cal_summary_table_sample(fund_name, fund_code, fund_type, date_array, benchmark_array)
-    rank0 = FundRank().rank_fund_array2(fund_pct, bench_pct, fund_code, date_array, "wind", excess=False)
+    rank0 = FundRank().rank_fund_array2(fund_pct, bench_pct, fund_code, date_array, "中证500基金", excess=False)
     rank1 = FundRank().rank_fund_array2(fund_pct, bench_pct, fund_code, date_array, "普通股票型基金",  excess=False)
-    rank2 = FundRank().rank_fund_array2(fund_pct, bench_pct, fund_code, date_array, "指数型基金", excess=True)
-    rank3 = FundRank().rank_fund_array2(fund_pct, bench_pct, fund_code, date_array, "指数增强型基金", excess=True)
+    # rank2 = FundRank().rank_fund_array2(fund_pct, bench_pct, fund_code, date_array, "中证500基金", excess=True)
+    # rank3 = FundRank().rank_fund_array2(fund_pct, bench_pct, fund_code, date_array, "指数增强型基金", excess=True)
 
-    performance_table = pd.concat([performance_table, rank0, rank1, rank2, rank3], axis=0)
+    performance_table = pd.concat([performance_table, rank0, rank1], axis=0)
 
     col_number = 1
     num_format_pd = pd.DataFrame([], columns=performance_table.columns, index=['format'])
@@ -119,5 +127,5 @@ if __name__ == '__main__':
 
     from quant.data.data import Data
     save_path = os.path.join(Data().primary_data_path, "mfcteda_data\performance")
-    end_date = '20190228'
+    end_date = '20190331'
     write_public_lh(end_date, save_path)

@@ -29,6 +29,7 @@ def rank_fund_self(end_date, fund_code, rank_pool, fund_name, mage_date):
     before_2y = datetime(year=today.year - 2, month=today.month, day=today.day).strftime("%Y%m%d")
     before_3y = datetime(year=today.year - 3, month=today.month, day=today.day).strftime("%Y%m%d")
     before_5y = datetime(year=today.year - 5, month=today.month, day=today.day).strftime("%Y%m%d")
+    before_10y = datetime(year=today.year - 10, month=today.month, day=today.day).strftime("%Y%m%d")
 
     date_array = np.array([
         ["2019年", "20190101", end_date, '20180930'],
@@ -36,11 +37,21 @@ def rank_fund_self(end_date, fund_code, rank_pool, fund_name, mage_date):
         ["2017年", "20170101", '20171231', "20160930"],
         ["2016年", "20160101", '20161231', "20150930"],
         ["2015年", "20150101", '20151231', "20140930"],
+        ["2014年", "20140101", '20141231', "20130930"],
+        ["2013年", "20130101", '20131231', "20120930"],
+        ["2012年", "20120101", '20121231', "20110930"],
+        ["2011年", "20110101", '20111231', "20100930"],
+        ["2010年", "20100101", '20101231', "20090930"],
+        ["2009年", "20090101", '20091231', "20080930"],
+        ["2008年", "20080101", '20081231', "20070930"],
+        ["2007年", "20070101", '20071231', "20060930"],
         ["成立以来", mage_date, end_date, mage_date],
         ["过去1年", before_1y, end_date, before_1y],
         ["过去2年", before_2y, end_date, before_2y],
         ["过去3年", before_3y, end_date, before_3y],
-        ["过去5年", before_5y, end_date, before_3y]])
+        ["过去5年", before_5y, end_date, before_5y],
+        ["过去10年", before_10y, end_date, before_10y],
+    ])
 
     rank_percent = pd.DataFrame([], index=[fund_name])
     rank_str = pd.DataFrame([], index=[fund_name])
@@ -123,6 +134,7 @@ def return_fund(end_date, fund_code, fund_name, mage_date):
     before_2y = datetime(year=today.year - 2, month=today.month, day=today.day).strftime("%Y%m%d")
     before_3y = datetime(year=today.year - 3, month=today.month, day=today.day).strftime("%Y%m%d")
     before_5y = datetime(year=today.year - 5, month=today.month, day=today.day).strftime("%Y%m%d")
+    before_10y = datetime(year=today.year - 10, month=today.month, day=today.day).strftime("%Y%m%d")
 
     date_array = np.array([
         ["2019年", "20190101", end_date, '20180930'],
@@ -130,11 +142,22 @@ def return_fund(end_date, fund_code, fund_name, mage_date):
         ["2017年", "20170101", '20171231', "20160930"],
         ["2016年", "20160101", '20161231', "20150930"],
         ["2015年", "20150101", '20151231', "20140930"],
-        ["管理以来", mage_date, end_date, mage_date],
+        ["2014年", "20140101", '20141231', "20130930"],
+        ["2013年", "20130101", '20131231', "20120930"],
+        ["2012年", "20120101", '20121231', "20110930"],
+        ["2011年", "20110101", '20111231', "20100930"],
+        ["2010年", "20100101", '20101231', "20090930"],
+        ["2009年", "20090101", '20091231', "20080930"],
+        ["2008年", "20080101", '20081231', "20070930"],
+        ["2007年", "20070101", '20071231', "20060930"],
+        ["成立以来", mage_date, end_date, mage_date],
         ["过去1年", before_1y, end_date, before_1y],
         ["过去2年", before_2y, end_date, before_2y],
         ["过去3年", before_3y, end_date, before_3y],
-        ["过去5年", before_5y, end_date, before_3y]])
+        ["过去5年", before_5y, end_date, before_5y],
+        ["过去10年", before_10y, end_date, before_10y],
+    ])
+
 
     performance_table = pd.DataFrame([], index=[fund_name])
     for i_date in range(len(date_array)):
@@ -160,6 +183,7 @@ def return_index(end_date, index_code, index_name, index_ratio, mage_date):
     before_2y = datetime(year=today.year - 2, month=today.month, day=today.day).strftime("%Y%m%d")
     before_3y = datetime(year=today.year - 3, month=today.month, day=today.day).strftime("%Y%m%d")
     before_5y = datetime(year=today.year - 5, month=today.month, day=today.day).strftime("%Y%m%d")
+    before_10y = datetime(year=today.year - 10, month=today.month, day=today.day).strftime("%Y%m%d")
 
     date_array = np.array([
         ["2019年", "20190101", end_date, '20180930'],
@@ -167,10 +191,21 @@ def return_index(end_date, index_code, index_name, index_ratio, mage_date):
         ["2017年", "20170101", '20171231', "20160930"],
         ["2016年", "20160101", '20161231', "20150930"],
         ["2015年", "20150101", '20151231', "20140930"],
+        ["2014年", "20140101", '20141231', "20130930"],
+        ["2013年", "20130101", '20131231', "20120930"],
+        ["2012年", "20120101", '20121231', "20110930"],
+        ["2011年", "20110101", '20111231', "20100930"],
+        ["2010年", "20100101", '20101231', "20090930"],
+        ["2009年", "20090101", '20091231', "20080930"],
+        ["2008年", "20080101", '20081231', "20070930"],
+        ["2007年", "20070101", '20071231', "20060930"],
+        ["成立以来", mage_date, end_date, mage_date],
         ["过去1年", before_1y, end_date, before_1y],
         ["过去2年", before_2y, end_date, before_2y],
         ["过去3年", before_3y, end_date, before_3y],
-        ["过去5年", before_5y, end_date, before_3y]])
+        ["过去5年", before_5y, end_date, before_5y],
+        ["过去10年", before_10y, end_date, before_10y],
+    ])
 
     performance_table = pd.DataFrame([], index=[index_name])
     for i_date in range(len(date_array)):
@@ -274,8 +309,8 @@ def rank_all_fund(end_date):
         index_return_pct = pd.concat([index_return_pct, return_i], axis=0)
 
     performance_return_pct = pd.concat([performance_return_pct, index_return_pct], axis=0)
-    date_index = ["2019年", "2018年", "2017年", "2016年", "2015年", "管理以来", "过去1年", "过去2年", "过去3年", "过去5年"]
-    performance_return_pct = performance_return_pct[date_index]
+    # date_index = ["2019年", "2018年", "2017年", "2016年", "2015年", "成立以来", "过去1年", "过去2年", "过去3年", "过去5年"]
+    # performance_return_pct = performance_return_pct[date_index]
 
     file = os.path.join(path, '泰达宏利基金排名%s.xlsx' % end_date)
     we = WriteExcel(file)
@@ -312,6 +347,6 @@ if __name__ == '__main__':
     print(end_date)
 
     """ 需要更新富时指数收益 """
-    update_data()
-    rank_all_manager(end_date)
+    # update_data()
+    # rank_all_manager(end_date)
     rank_all_fund(end_date)

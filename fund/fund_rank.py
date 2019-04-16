@@ -61,6 +61,7 @@ class FundRank(Data):
             pool = Fund().get_fund_pool_all(date="20181231", name=rank_pool)
             bool_series = (pool['if_connect'] == '非联接基金') & (pool['if_hk'] == '非港股基金')
             bool_series &= (pool['if_a'] == 'A类基金')
+            bool_series &= (pool['if_etf'] == '非ETF基金')
             pool = pool[bool_series]
             fund_code_str = ','.join(pool.index.values)
 
@@ -161,6 +162,7 @@ class FundRank(Data):
             pool = Fund().get_fund_pool_all(date="20181231", name=rank_pool)
             bool_series = (pool['if_connect'] == '非联接基金') & (pool['if_hk'] == '非港股基金')
             bool_series &= (pool['if_a'] == 'A类基金')
+            bool_series &= (pool['if_etf'] == '非ETF基金')
             pool = pool[bool_series]
 
             if not excess:

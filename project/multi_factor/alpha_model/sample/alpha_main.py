@@ -68,7 +68,7 @@ class AlphaMain(object):
 
 if __name__ == '__main__':
 
-    beg_date, end_date, period = "20190301", "20190404", "W"
+    beg_date, end_date, period = "20190101", "20190404", "W"
     self = AlphaMain()
     # self.update_data()
     self.alpha_main(beg_date, end_date, period)

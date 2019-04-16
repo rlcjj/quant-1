@@ -842,11 +842,12 @@ class AttributionFund(Data):
 
         for i_fund in range(0, len(param)):
             fund_name = param.index[i_fund]
-            MfcData().cal_mfc_holding_barra_exposure_perieds(fund_name, beg_date, today)
+            MfcData().cal_mfc_holding_barra_exposure_period(fund_name, beg_date, today)
 
         date_series = Date().get_trade_date_series(beg_date, today)
         for date in date_series:
             Index().make_weight_mixed(date)
+            Index().load_index_factor_all(beg_date, today)
 
         Index().cal_index_exposure("000300.SH", beg_date, today)
         Index().cal_index_exposure("000905.SH", beg_date, today)
@@ -892,10 +893,10 @@ class AttributionFund(Data):
         # end_date = '20190312'
         # period_name = "2019年至今（20190312）"
 
-        fund_name = '建行中国人寿固收组合管理计划'
-        beg_date = '20190101'
-        end_date = '20190312'
-        period_name = "2019年至今（20190312）"
+        fund_name = '泰达宏利启富'
+        beg_date = '20180625'
+        end_date = '20190411'
+        period_name = "20180625至20190411"
 
         param = MfcData().get_mfc_fund_info()
         param.index = param.Name
@@ -918,6 +919,6 @@ if __name__ == '__main__':
 
     self = AttributionFund()
     date_list = [['20190101', '20190329', "2019年1-3月"]]
-    self.update_data()
+    # self.update_data()
     self.attribution_all_fund(date_list)
-    # self.attribution_one_fund()
+    self.attribution_one_fund()
