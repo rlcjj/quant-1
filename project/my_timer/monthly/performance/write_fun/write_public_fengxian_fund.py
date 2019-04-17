@@ -25,11 +25,22 @@ def write_public_fxys(end_date, save_path):
     benchmark_name_2 = "WIND全A"
     benchmark_ratio = 0.95
 
-    setup_date = '20160926'
+    setup_date = '20050405'
     date_array = np.array([["2019年", '20190101', end_date, '20180930'],
                            ["2018年", "20180101", '20181231', "20170930"],
                            ["2017年", "20170101", '20171231', "20160930"],
-                           ["2016年", setup_date, '20161231', setup_date],
+                           ["2016年", "20160101", '20161231', "20150930"],
+                           ["2015年", "20150101", '20151231', "20140930"],
+                           ["2014年", "20140101", '20141231', "20130930"],
+                           ["2013年", "20130101", '20131231', "20120930"],
+                           ["2012年", "20120101", '20121231', "20110930"],
+                           ["2011年", "20110101", '20111231', "20100930"],
+                           ["2010年", "20100101", '20101231', "20090930"],
+                           ["2009年", "20090101", '20091231', "20080930"],
+                           ["2008年", "20080101", '20081231', "20070930"],
+                           ["2007年", "20070101", '20071231', "20060930"],
+                           ["2006年", "20060101", '20061231', "20050930"],
+                           ["2005年", setup_date, '20051231', setup_date],
                            ["成立以来", setup_date, end_date, setup_date]])
 
     benchmark_array = np.array([["沪深300", "000300.SH"],
@@ -51,8 +62,8 @@ def write_public_fxys(end_date, save_path):
     ###########################################################################################
     performance_table = MfcTable().cal_summary_table(fund_name, fund_code, fund_type, date_array, benchmark_array)
     rank0 = FundRank().rank_fund_array2(fund_pct, bench_pct, fund_code, date_array, "偏债混合型基金", excess=False)
-    rank1 = FundRank().rank_fund_array2(fund_pct, bench_pct, fund_code, date_array, "wind", excess=False)
-    performance_table = pd.concat([performance_table, rank0, rank1], axis=0)
+    # rank1 = FundRank().rank_fund_array2(fund_pct, bench_pct, fund_code, date_array, "wind", excess=False)
+    performance_table = pd.concat([performance_table, rank0], axis=0)
 
     col_number = 1
     num_format_pd = pd.DataFrame([], columns=performance_table.columns, index=['format'])
@@ -100,5 +111,5 @@ if __name__ == '__main__':
 
     from quant.data.data import Data
     save_path = os.path.join(Data().primary_data_path, "mfcteda_data\performance")
-    end_date = '20181130'
+    end_date = '20190412'
     write_public_fxys(end_date, save_path)

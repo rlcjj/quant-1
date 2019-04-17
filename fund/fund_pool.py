@@ -108,7 +108,9 @@ class FundPool(Data):
 
         if name == "偏股混合型基金":
             d = pd.DataFrame([['001017.OF', "泰达宏利改革动力"],
-                              ['002263.OF', '泰达宏利同顺大数据']])
+                              ['002263.OF', '泰达宏利同顺大数据'],
+                              ["001170.OF", "泰达宏利复兴伟业"],
+                              ["005903.OF", "泰达宏利绩优增长"]])
             d.columns = ['wind_code', 'sec_name']
             data = data.append(d)
             data = data.reset_index(drop=True)

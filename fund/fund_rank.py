@@ -1,9 +1,13 @@
-from quant.stock.date import Date
-from quant.data.data import Data
-from quant.fund.fund import Fund
-import pandas as pd
-import numpy as np
 import os
+import numpy as np
+import pandas as pd
+
+from quant.data.data import Data
+from quant.stock.date import Date
+from quant.stock.index import Index
+from quant.fund.fund_factor import FundFactor
+from quant.fund.fund_pool import FundPool
+from quant.utility.financial_series import FinancialSeries
 
 from WindPy import w
 w.start()
@@ -58,7 +62,7 @@ class FundRank(Data):
         else:
 
             # 获取基金池
-            pool = Fund().get_fund_pool_all(date="20181231", name=rank_pool)
+            pool = FundPool().get_fund_pool_all(date="20181231", name=rank_pool)
             bool_series = (pool['if_connect'] == '非联接基金') & (pool['if_hk'] == '非港股基金')
             bool_series &= (pool['if_a'] == 'A类基金')
             bool_series &= (pool['if_etf'] == '非ETF基金')
@@ -159,7 +163,7 @@ class FundRank(Data):
         else:
 
             # 获取基金池
-            pool = Fund().get_fund_pool_all(date="20181231", name=rank_pool)
+            pool = FundPool().get_fund_pool_all(date="20181231", name=rank_pool)
             bool_series = (pool['if_connect'] == '非联接基金') & (pool['if_hk'] == '非港股基金')
             bool_series &= (pool['if_a'] == 'A类基金')
             bool_series &= (pool['if_etf'] == '非ETF基金')
@@ -233,6 +237,54 @@ class FundRank(Data):
                     pct = "None"
                 return val, pct
 
+    def rank_excess_fund(self, fund_pool_name, ge_index_code, my_index_code, my_fund_code, beg_date, end_date):
+
+        """
+        计算某只基金在基金池的超额收益排名
+        这只基金指定基准 其他默认为windqa
+        """
+        fund_pool = FundPool().get_fund_pool_all(date="20181231", name=fund_pool_name)
+        fund_pool = fund_pool[fund_pool['setupdate'] < beg_date]
+        fund_pool = list(fund_pool['wind_code'].values)
+
+        fund_pool.append(my_fund_code)
+        result = pd.DataFrame([], index=fund_pool)
+        data = FundFactor().get_fund_factor("Repair_Nav")
+
+        for i in range(0, len(fund_pool)):
+
+            fund_code = fund_pool[i]
+
+            if fund_code == my_fund_code:
+                index_code = my_index_code
+            else:
+                index_code = ge_index_code
+
+            try:
+                print(fund_code, index_code, beg_date, end_date)
+                fund = pd.DataFrame(data[fund_code])
+                index = Index().get_index_factor(index_code, attr=["CLOSE"])
+                fs = FinancialSeries(pd.DataFrame(fund), pd.DataFrame(index))
+                fund_return = fs.get_interval_return_annual(beg_date, end_date)
+                bench_return = fs.get_interval_return_benchmark(beg_date, end_date)
+                result.loc[fund_code, "基准收益"] = bench_return
+                result.loc[fund_code, "基金收益"] = fund_return
+                result.loc[fund_code, "超额收益"] = - bench_return + fund_return
+
+            except Exception as e:
+                print(e)
+
+        result = result.dropna()
+        result = result[~result.index.duplicated()]
+        result = result.sort_values(by=['超额收益'], ascending=False)
+        result['收益名次'] = range(1, len(result) + 1)
+        result['收益排名'] = result['收益名次'].map(lambda x: str(x) + '/' + str(len(result)))
+        result['收益排名百分比'] = result['收益名次'].map(lambda x: x / len(result))
+        excess_return = result.loc[my_fund_code, "超额收益"]
+        pct = result.loc[my_fund_code, "收益排名百分比"]
+        rank_str = result.loc[my_fund_code, "收益排名"]
+        return excess_return, pct, rank_str
+
     def rank_fund_array(self, fund_code, date_array, rank_pool, excess):
 
         """ 基金在不同区间段的排名 """
@@ -284,11 +336,15 @@ class FundRank(Data):
                                ["2016年", '20160101', '20161231', "20160101"],
                                ["2015年", setup_date, '20151231', setup_date],
                                ["成立以来", setup_date, end_date, setup_date]])
-        fund_pct = Fund().get_fund_factor("Repair_Nav_Pct")
-        bench_pct = Fund().get_fund_factor("Fund_Bench_Pct") * 100
+        fund_pct = FundFactor().get_fund_factor("Repair_Nav_Pct")
+        bench_pct = FundFactor().get_fund_factor("Fund_Bench_Pct") * 100
         print(self.rank_fund_array2(fund_pct, bench_pct, fund_code, date_array, rank_pool, excess))
 
 if __name__ == '__main__':
 
     self = FundRank()
-    self.example()
+    # self.example()
+
+    print(self.rank_excess_fund(fund_pool_name="偏股混合型基金", ge_index_code="881001.WI",
+                                my_index_code="FTSE成长", my_fund_code="162201.OF",
+                                beg_date="20180401", end_date="20190331"))

@@ -113,6 +113,7 @@ class EmailSender(object):
             smtpObj.quit()
 
         except Exception as e:
+            print(e)
             print("Error: 无法发送邮件")
 
     def send_mail_qq(self, sender_mail_name, receivers_mail_name,
@@ -139,6 +140,7 @@ class EmailSender(object):
             print('邮件发送成功')
             server.quit()
         except Exception as e:
+            print(e)
             print('邮件发送失败')
 
 
@@ -146,26 +148,26 @@ if __name__ == '__main__':
 
     """ 泰达测试邮件 """
 
-    # path = 'E:\\Data\\fund_data\\fund_index_exposure_weekly\\'
-    # last_date = '20181030'
-    # path = os.path.join(path, "output_exposure")
-    # xlsx_name = 'IndexFundExposure' + last_date + '.xlsx'
-    # exposure_file = os.path.join(path, xlsx_name)
-    #
-    # fig_name = 'last_trade_date.png'
-    # fig_file = os.path.join(path, fig_name)
-    #
-    # sender_mail_name = 'fucheng.dou@mfcteda.com'
-    # receivers_mail_name = ['fucheng.dou@mfcteda.com']
-    # acc_mail_name = []
-    # subject_header = "指数基金风格暴露周报_测试自动发送"
-    #
-    # email = EmailSender()
-    # email.attach_text('暴露如下')
-    # email.attach_file(exposure_file)
-    # email.attach_picture_inside_body("IndexFundExposure", fig_file)
-    # email.send_mail_mfcteda(sender_mail_name, receivers_mail_name,
-    #                         acc_mail_name, subject_header)
+    path = 'E:\\Data\\fund_data\\fund_index_exposure_weekly\\'
+    last_date = '20181030'
+    path = os.path.join(path, "output_exposure")
+    xlsx_name = 'IndexFundExposure' + last_date + '.xlsx'
+    exposure_file = os.path.join(path, xlsx_name)
+
+    fig_name = 'last_trade_date.png'
+    fig_file = os.path.join(path, fig_name)
+
+    sender_mail_name = 'fucheng.dou@mfcteda.com'
+    receivers_mail_name = ['fucheng.dou@mfcteda.com']
+    acc_mail_name = []
+    subject_header = "指数基金风格暴露周报_测试自动发送"
+
+    email = EmailSender()
+    email.attach_text('暴露如下')
+    email.attach_file(exposure_file)
+    email.attach_picture_inside_body("IndexFundExposure", fig_file)
+    email.send_mail_mfcteda(sender_mail_name, receivers_mail_name,
+                            acc_mail_name, subject_header)
 
     """ QQ测试邮件 """
 
@@ -186,5 +188,5 @@ if __name__ == '__main__':
     """ 中文"""
 
     self = EmailSender()
-    print(self.check_contain_chinese("好jj"))
+    print(self.check_contain_chinese("好gg"))
     print(self.check_contain_chinese("djdjhfd.csv"))
