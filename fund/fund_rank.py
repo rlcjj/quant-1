@@ -265,7 +265,7 @@ class FundRank(Data):
                 fund = pd.DataFrame(data[fund_code])
                 index = Index().get_index_factor(index_code, attr=["CLOSE"])
                 fs = FinancialSeries(pd.DataFrame(fund), pd.DataFrame(index))
-                fund_return = fs.get_interval_return_annual(beg_date, end_date)
+                fund_return = fs.get_interval_return(beg_date, end_date)
                 bench_return = fs.get_interval_return_benchmark(beg_date, end_date)
                 result.loc[fund_code, "基准收益"] = bench_return
                 result.loc[fund_code, "基金收益"] = fund_return
@@ -283,6 +283,7 @@ class FundRank(Data):
         excess_return = result.loc[my_fund_code, "超额收益"]
         pct = result.loc[my_fund_code, "收益排名百分比"]
         rank_str = result.loc[my_fund_code, "收益排名"]
+        result.to_csv(os.path.join(self.data_path, "超额收益_%s_%s_%s.csv" % (my_fund_code, beg_date, end_date)))
         return excess_return, pct, rank_str
 
     def rank_fund_array(self, fund_code, date_array, rank_pool, excess):

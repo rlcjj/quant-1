@@ -238,7 +238,7 @@ class FamaFrench(Data):
 
         """ 三因素模型 市场 市值 估值 """
 
-        term = 60
+        term = 20
         stock_excess_pct = self.get_stock_excess_pct()
         index_excess_pct = self.get_factor_pct("Market")
         smb_factor_pct = self.get_factor_pct("SMB")
@@ -250,6 +250,7 @@ class FamaFrench(Data):
         size_beta = pd.DataFrame([], index=date_series_all, columns=stock_excess_pct.columns)
         bp_beta = pd.DataFrame([], index=date_series_all, columns=stock_excess_pct.columns)
         res_return = pd.DataFrame([], index=date_series_all, columns=stock_excess_pct.columns)
+        r_2 = pd.DataFrame([], index=date_series_all, columns=stock_excess_pct.columns)
 
         for i_stock in range(len(stock_excess_pct.columns)):
 
@@ -283,7 +284,9 @@ class FamaFrench(Data):
                         size_beta.loc[ed_date, stock_code] = res.params[2]
                         bp_beta.loc[ed_date, stock_code] = res.params[3]
                         res_return.loc[ed_date, stock_code] = residual_return_series[-1]
+                        r_2.loc[ed_date, stock_code] = res.rsquared_adj
                     except Exception as e:
+                        print(e)
                         print("Regression not Successful %s %s" % (stock_code, ed_date))
                 else:
                     print("Length is Small or Stock Vol is Small %s %s" % (stock_code, ed_date))
@@ -293,6 +296,7 @@ class FamaFrench(Data):
         size_beta = size_beta.T
         bp_beta = bp_beta.T
         res_return = res_return.T
+        r_2 = r_2.T
 
         path = os.path.join(self.data_path, "model_ff3")
         Stock().write_factor_h5(alpha, factor_name="FF3_Alpha", path=path)
@@ -300,18 +304,20 @@ class FamaFrench(Data):
         Stock().write_factor_h5(size_beta, factor_name="FF3_Size", path=path)
         Stock().write_factor_h5(bp_beta, factor_name="FF3_BP", path=path)
         Stock().write_factor_h5(res_return, factor_name="FF3_ResidualReturn", path=path)
+        Stock().write_factor_h5(r_2, factor_name="FF3_R2", path=path)
 
         alpha.to_csv(os.path.join(path, "FF3_Alpha.csv"))
         market_beta.to_csv(os.path.join(path, "FF3_Market.csv"))
         size_beta.to_csv(os.path.join(path, "FF3_Size.csv"))
         bp_beta.to_csv(os.path.join(path, "FF3_BP.csv"))
         res_return.to_csv(os.path.join(path, "FF3_ResidualReturn.csv"))
+        r_2.to_csv(os.path.join(path, "FF3_R2.csv"))
 
     def ff5_model(self, beg_date, end_date):
 
         """ 五因素模型 市场 市值 估值 盈利 资产增长率 """
 
-        term = 60
+        term = 20
         beg_date = Date().change_to_str(beg_date)
         end_date = Date().change_to_str(end_date)
         stock_excess_pct = self.get_stock_excess_pct()
@@ -329,6 +335,7 @@ class FamaFrench(Data):
         roe_beta = pd.DataFrame([], index=date_series_all, columns=stock_excess_pct.columns)
         assetyoy_beta = pd.DataFrame([], index=date_series_all, columns=stock_excess_pct.columns)
         res_return = pd.DataFrame([], index=date_series_all, columns=stock_excess_pct.columns)
+        r_2 = pd.DataFrame([], index=date_series_all, columns=stock_excess_pct.columns)
 
         for i_stock in range(len(stock_excess_pct.columns)):
 
@@ -365,6 +372,7 @@ class FamaFrench(Data):
                         roe_beta.loc[ed_date, stock_code] = res.params[4]
                         assetyoy_beta.loc[ed_date, stock_code] = res.params[5]
                         res_return.loc[ed_date, stock_code] = residual_return_series[-1]
+                        r_2.loc[ed_date, stock_code] = res.rsquared_adj
                     except Exception as e:
                         print("Regression not Successful %s %s" % (stock_code, ed_date))
                 else:
@@ -377,6 +385,7 @@ class FamaFrench(Data):
         roe_beta = roe_beta.T
         assetyoy_beta = assetyoy_beta.T
         res_return = res_return.T
+        r_2 = r_2.T
 
         path = os.path.join(self.data_path, "model_ff5")
         Stock().write_factor_h5(alpha, factor_name="FF5_Alpha", path=path)
@@ -386,6 +395,7 @@ class FamaFrench(Data):
         Stock().write_factor_h5(roe_beta, factor_name="FF5_ROE", path=path)
         Stock().write_factor_h5(assetyoy_beta, factor_name="FF5_AssetYOY", path=path)
         Stock().write_factor_h5(res_return, factor_name="FF5_ResidualReturn", path=path)
+        Stock().write_factor_h5(r_2, factor_name="FF5_R2", path=path)
 
         alpha.to_csv(os.path.join(path, "FF5_Alpha.csv"))
         market_beta.to_csv(os.path.join(path, "FF5_Market.csv"))
@@ -394,6 +404,7 @@ class FamaFrench(Data):
         roe_beta.to_csv(os.path.join(path, "FF5_ROE.csv"))
         assetyoy_beta.to_csv(os.path.join(path, "FF5_AssetYOY.csv"))
         res_return.to_csv(os.path.join(path, "FF5_ResidualReturn.csv"))
+        r_2.to_csv(os.path.join(path, "FF5_R2.csv"))
 
     def get_data(self, model_name="model_ff3", factor_name="FF3_Alpha"):
 
@@ -402,6 +413,7 @@ class FamaFrench(Data):
         data = Stock().read_factor_h5(factor_name=factor_name, path=path)
         return data
 
+
 if __name__ == '__main__':
 
     from datetime import datetime
@@ -409,12 +421,13 @@ if __name__ == '__main__':
     today = datetime.today().strftime("%Y%m%d")
     model_name = "model_ff3"
     factor_name = "FF3_Alpha"
+    end_date = today
 
     self = FamaFrench()
 
     # self.load_data(beg_date, today)
     # self.cal_all_factor_pct()
-    # self.ff3_model(beg_date, end_date)
-    self.ff5_model("20080101", "20120101")
-    self.ff5_model("20040101", "20080101")
-    print(self.get_data(model_name, factor_name))
+    self.ff3_model(beg_date, end_date)
+    # self.ff5_model("20080101", "20120101")
+    # self.ff5_model("20040101", "20080101")
+    # print(self.get_data(model_name, factor_name))
